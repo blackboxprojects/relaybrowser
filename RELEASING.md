@@ -1,7 +1,7 @@
 # Releasing Relay
 
 How a release of Relay is made, how every installed Relay finds it, and what
-is still to do before the first one. Written 25 November 2026.
+is still to do after the first one. Written 25 November 2026.
 
 Relay is a fork of [Search](https://github.com/driceroland/Search) (MIT,
 Office Commun). Its releases live in
@@ -12,11 +12,11 @@ which is public.
 
 | Piece | State |
 |---|---|
-| Source moved to `Code/github/relaybrowser` | Done. `origin` is `blackboxprojects/relaybrowser`, `upstream` is `driceroland/Search`. Committed locally on `mine`; the source is not pushed. |
+| Source moved to `Code/github/relaybrowser` | Done. `origin` is `blackboxprojects/relaybrowser`, `upstream` is `driceroland/Search`. The source is on GitHub: local branch `mine` tracks `origin/main`. |
 | Updater reads Relay's own releases | Done in code, covered by unit tests. The swap from one release to the next has not been watched yet (Phase 2). |
 | `release.sh` (build, pack, sign the feed, publish) | All three steps run. |
-| Release signing key | Made 25 November 2026. The public half is in `ReleaseKey.swift` (uncommitted). **Not backed up yet.** The Relay in `/Applications` predates it. |
-| First release on GitHub | [v1.0.21](https://github.com/blackboxprojects/relaybrowser/releases/tag/v1.0.21), 25 November 2026, build 202611251801. Binaries only: its tag sits on the repository's initial commit. The feed and ZIP GitHub serves were downloaded and checked against the key and the hash. |
+| Release signing key | Made 25 November 2026. The public half is in `ReleaseKey.swift`, committed. **Not backed up yet.** |
+| First release on GitHub | [v1.0.21](https://github.com/blackboxprojects/relaybrowser/releases/tag/v1.0.21), 25 November 2026, build 202611251801. Its tag is on the commit it was built from (`4f23d2d`). The feed and ZIP GitHub serves were downloaded and checked against the key and the hash. |
 
 ## How an update reaches a Mac
 
@@ -69,8 +69,8 @@ to the repository's releases to push a build.
    ever be updated again: each would need a new build installed by hand.
    The script refuses to make a second key over the first for this reason.
 
-3. **Install a build that carries the key** (`./install.sh`). The Relay in
-   `/Applications` today was built without one and will never update itself.
+3. **Install a build that carries the key** (`./install.sh`). A Relay built
+   before the key was made will never update itself.
 
 ## Making a release
 
@@ -79,7 +79,8 @@ to the repository's releases to push a build.
 3. In `CHANGELOG.md`, give the Unreleased section its number and date. Put
    its gist as the first paragraph of `NOTES.md`: that paragraph is the line
    Settings shows under the new version, and the release's text on GitHub.
-4. Commit, and push if the source is to be on GitHub (see Decisions).
+4. Commit and push, so the release's tag lands on the commit it was built
+   from.
 5. Try the package without publishing:
 
    ```bash
@@ -137,21 +138,17 @@ frequent; it also moves the private key off one Mac, which is a trade.
 
 ## Decisions to make
 
-1. **Source in the release repository, or binaries only.** The local repo
-   carries all of Search's history (1,473 commits) on branch `mine`.
-   `origin/main` on GitHub holds one unrelated "Initial commit". Either push
-   `mine` as the new `main` (a force push over that one commit), or keep the
-   GitHub repository for releases alone and the source local. `release.sh`
-   works both ways: it tags the pushed commit when there is one.
-2. **Version numbers.** `VERSION` is Search's (1.0.20) and moves when
-   upstream is merged. Relay needs numbers that don't collide with it:
-   continue from 1.0.21 and accept the two drift apart, or start Relay's own
-   line (2.0.0). Updates compare build numbers only, so either works.
-3. **What a public repository shows.** `README.md`, `SECURITY.md` and
-   `CONTRIBUTING.md` are still Search's: they name Office Commun, link
-   searchbrowser.app downloads and a Homebrew cask that install Search, not
-   Relay. Rewrite them before pushing. Keep `LICENSE` and
-   `THIRD_PARTY_NOTICES.md` as they are (MIT requires the notice).
+1. **Source in the release repository, or binaries only.** Decided: the
+   source is public. `mine`, with all of Search's history, was pushed as
+   `main` on 25 November 2026.
+2. **Version numbers.** Relay continued from Search's 1.0.20 with 1.0.21.
+   The two lines will drift apart as upstream is merged; starting Relay's
+   own line (2.0.0) is still open. Updates compare build numbers only, so
+   either works.
+3. **What a public repository shows.** `README.md` is Relay's own.
+   `SECURITY.md` and `CONTRIBUTING.md` are still Search's and name Office
+   Commun; rewrite them. Keep `LICENSE` and `THIRD_PARTY_NOTICES.md` as they
+   are (MIT requires the notice).
 4. **Upstream services Relay still calls.** Send Feedback drafts mail to
    hello@searchbrowser.app; the beta and news sign-ups post to
    searchbrowser.app; AI sign-in returns through officecommun.com. Fine for
@@ -181,7 +178,7 @@ frequent; it also moves the private key off one Mac, which is a trade.
 
 | File | What it does |
 |---|---|
-| `release.sh` (build, pack, sign the feed, publish) | All three steps run. |
+| `release.sh` | Builds, packs, signs the feed, publishes |
 | `Installer/release-key.swift` | Makes the key, signs and checks the feed |
 | `Sources/Relay/ReleaseFeed.swift` | Feed address, signature check, which addresses are allowed |
 | `Sources/Relay/ReleaseKey.swift` | The public key (empty until `./release.sh key`) |
