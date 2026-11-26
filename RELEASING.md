@@ -12,11 +12,11 @@ which is public.
 
 | Piece | State |
 |---|---|
-| Source moved to `Code/github/relaybrowser` | Done. `origin` is `blackboxprojects/relaybrowser`, `upstream` is `driceroland/Search`. Nothing is committed or pushed. |
-| Updater reads Relay's own releases | Done in code, covered by unit tests. Not yet run against a real release. |
-| `release.sh` (build, pack, sign the feed, publish) | `key` and the pack step are run and checked: the feed is signed with the real key and names the ZIP's hash. `publish` has not been run. |
+| Source moved to `Code/github/relaybrowser` | Done. `origin` is `blackboxprojects/relaybrowser`, `upstream` is `driceroland/Search`. Committed locally on `mine`; the source is not pushed. |
+| Updater reads Relay's own releases | Done in code, covered by unit tests. The swap from one release to the next has not been watched yet (Phase 2). |
+| `release.sh` (build, pack, sign the feed, publish) | All three steps run. |
 | Release signing key | Made 25 November 2026. The public half is in `ReleaseKey.swift` (uncommitted). **Not backed up yet.** The Relay in `/Applications` predates it. |
-| First release on GitHub | Not made. |
+| First release on GitHub | [v1.0.21](https://github.com/blackboxprojects/relaybrowser/releases/tag/v1.0.21), 25 November 2026, build 202611251801. Binaries only: its tag sits on the repository's initial commit. The feed and ZIP GitHub serves were downloaded and checked against the key and the hash. |
 
 ## How an update reaches a Mac
 
@@ -119,9 +119,7 @@ took the bad one get the fix as a normal update.
 
 ## Plan
 
-**Phase 1: first self-updating release (now).**
-Make and back up the key, decide the items under Decisions, commit, publish
-`v1.0.21` (or whichever number is chosen), install it by hand once.
+**Phase 1: first self-updating release.** Done: v1.0.21. Still open from it: back up the key, and the items under Decisions.
 
 **Phase 2: prove the loop.**
 Publish a second release with a trivial change. Confirm the first one finds
@@ -183,7 +181,7 @@ frequent; it also moves the private key off one Mac, which is a trade.
 
 | File | What it does |
 |---|---|
-| `release.sh` | `key`, pack, `publish` |
+| `release.sh` (build, pack, sign the feed, publish) | All three steps run. |
 | `Installer/release-key.swift` | Makes the key, signs and checks the feed |
 | `Sources/Relay/ReleaseFeed.swift` | Feed address, signature check, which addresses are allowed |
 | `Sources/Relay/ReleaseKey.swift` | The public key (empty until `./release.sh key`) |
