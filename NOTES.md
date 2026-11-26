@@ -1,3 +1,5 @@
+Relay now comes with uBlock Origin Lite, fetched from the Chrome Web Store the first time it runs. Restore takes a ZIP too: Settings › Custom › Backup › Restore › From a ZIP… offers whatever backup files the ZIP holds, such as settings.plist, containers.json and container-rules.json.
+
 A site kept to a container that has a space of its own now opens in that space, not in the one the window was on. Settings › Containers lists the site rules by container name, a tab group's title in the column is the size chosen for tab titles, and updates install on their own unless switched off.
 
 Restore a backup from Settings › Custom › Backup: pick a day, then all of it or only the settings, the tabs, the bookmarks, the containers or the container site rules. Relay restarts with them, and what was there before is kept as "Before the last restore".

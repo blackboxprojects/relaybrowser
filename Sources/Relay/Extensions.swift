@@ -253,6 +253,8 @@ final class Extensions: NSObject, ObservableObject {
                 // Their rules, built as they loaded (Trim.swift).
                 Trim.rulesBuilt()
                 checkForUpdates()
+                // Fork: the one Relay comes with, the first time (Shipped.swift).
+                await installShipped()
             }
         }
         // Once the window is up: loading one takes the main thread for tens
@@ -875,6 +877,27 @@ final class Extensions: NSObject, ObservableObject {
             try await admit(staged, as: id, fromStore: true, finalFolder: target, confirm: confirm || !Store.testing)
         } catch {
             browser?.announce(error.localizedDescription)
+        }
+    }
+
+    /// Fork: the extension Relay comes with (Shipped.swift), installed
+    /// without the question a store install asks. Only for an id written
+    /// into Relay itself: nothing a page or a person hands over reaches it.
+    func installUnasked(id: String) async {
+        guard id == Shipped.ublockLite, !Store.testing else { return }
+        guard busy.insert(id).inserted else { return }
+        defer { busy.remove(id) }
+        guard !installed.contains(where: { $0.id == id }) else { return }
+        let staged = Extensions.stagingFolder(for: id)
+        defer { try? FileManager.default.removeItem(at: staged) }
+        do {
+            let crx = try await Crx.fetch(id)
+            let zip = try Crx.verifiedZip(crx, id: id)
+            try Crx.unpack(zip, into: staged)
+            try ExtensionShims.prepare(staged, fresh: true)
+            try await admit(staged, as: id, fromStore: true, finalFolder: Extensions.folder(for: id), confirm: false)
+        } catch {
+            // Said nowhere: nobody asked for it, and the next launch tries again.
         }
     }
 

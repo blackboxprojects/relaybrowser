@@ -173,7 +173,7 @@ struct CustomSettings: View {
                 }
                 Rule()
                 SettingRow(icon: "arrow.counterclockwise.icloud", title: "Restore",
-                           detail: "Bring back a backup: all of it, or only the settings, the tabs, the bookmarks, the containers or the site rules.") {
+                           detail: "Bring back a backup, or a ZIP of backup files: all of it, or only the settings, the tabs, the bookmarks, the containers or the site rules.") {
                     Pill(restoring ? "Close" : "Choose…") { restoring.toggle() }
                 }
                 if restoring { RestorePanel() }

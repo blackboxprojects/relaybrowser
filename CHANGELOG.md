@@ -11,6 +11,17 @@ in [ROADMAP.md](ROADMAP.md).
 
 ## Unreleased
 
+## 1.0.24 — 26 November 2026
+
+### Added
+
+- Relay comes with uBlock Origin Lite: fetched from the Chrome Web Store
+  the first time Relay runs, once. Removed in Settings › Extensions, it
+  stays removed.
+- Restore from a ZIP: Settings › Custom › Backup › Restore › From a ZIP…
+  takes a ZIP of backup files (settings.plist, containers.json,
+  container-rules.json and the rest) and offers what it holds.
+
 ## 1.0.23 — 26 November 2026
 
 ### Fixed

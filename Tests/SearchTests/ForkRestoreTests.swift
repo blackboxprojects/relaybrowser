@@ -141,4 +141,77 @@ final class ForkRestoreTests: XCTestCase {
         XCTAssertFalse(FileManager.default.fileExists(atPath: staging.path))
         XCTAssertEqual(ForkRestore.finish(from: staging, into: folder) { _ in }, 0)
     }
+
+    private func zip(_ place: URL, as name: String) throws -> URL {
+        let made = root.appendingPathComponent(name)
+        let ditto = Process()
+        ditto.executableURL = URL(fileURLWithPath: "/usr/bin/ditto")
+        ditto.arguments = ["-c", "-k", "--keepParent", place.path, made.path]
+        try ditto.run()
+        ditto.waitUntilExit()
+        XCTAssertEqual(ditto.terminationStatus, 0)
+        return made
+    }
+
+    func testOnlyTheNamesRelayBacksUpAreKnown() {
+        for name in ["settings.plist", "containers.json", "container-rules.json", "bookmarks.json", "pins.json",
+                     "spaces.json", "windows.json", "session.json", "session-E6CAC9BA-8A2F-4D82-A6BD-C60F17F45905.json"] {
+            XCTAssertTrue(ForkRestore.known(name), name)
+        }
+        for name in ["history.json", "evil.json", "session-nope.json", "settings.plist.json", "Info.plist", "containers 2.json", ""] {
+            XCTAssertFalse(ForkRestore.known(name), name)
+        }
+    }
+
+    func testAZipOfThreeFilesRestoresThoseThreeAndNothingElse() throws {
+        let packed = root.appendingPathComponent("My backup", isDirectory: true)
+        try write("zip containers", "containers.json", in: packed)
+        try write("zip rules", "container-rules.json", in: packed)
+        try PropertyListSerialization.data(fromPropertyList: ["fork.icon": "kikko"], format: .xml, options: 0)
+            .write(to: packed.appendingPathComponent("settings.plist"))
+        // Not Relay's: left in the ZIP.
+        try write("no", "evil.json", in: packed)
+        try write("no", "notes.txt", in: packed)
+        try write("no", "history.json", in: packed)
+        let file = try zip(packed, as: "backup.zip")
+
+        let folder = try XCTUnwrap(ForkRestore.unpack(file, into: root.appendingPathComponent("unpacked", isDirectory: true)))
+        XCTAssertEqual(Set(ForkRestore.files(of: folder).map(\.lastPathComponent)),
+                       ["containers.json", "container-rules.json", "settings.plist"])
+        XCTAssertEqual(ForkRestore.parts(of: folder), [.settings, .containers, .rules])
+
+        try write("live", "bookmarks.json", in: self.folder)
+        try write("live", "containers.json", in: self.folder)
+        XCTAssertEqual(try ForkRestore.stage(folder, parts: Set(ForkRestore.parts(of: folder)), into: staging), 3)
+        var settings: [String: Any]?
+        XCTAssertEqual(ForkRestore.finish(from: staging, into: self.folder) { settings = $0 }, 3)
+        XCTAssertEqual(read("containers.json"), "zip containers")
+        XCTAssertEqual(read("container-rules.json"), "zip rules")
+        XCTAssertEqual(settings?["fork.icon"] as? String, "kikko")
+        XCTAssertEqual(read("bookmarks.json"), "live")
+        XCTAssertNil(read("evil.json"))
+    }
+
+    func testAZipWithNothingOfRelaysOrNoZipAtAllIsRefused() throws {
+        let packed = root.appendingPathComponent("Other", isDirectory: true)
+        try write("no", "notes.json", in: packed)
+        let file = try zip(packed, as: "other.zip")
+        let into = root.appendingPathComponent("unpacked", isDirectory: true)
+        XCTAssertNil(ForkRestore.unpack(file, into: into))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: into.path))
+        try Data("not a zip".utf8).write(to: root.appendingPathComponent("fake.zip"))
+        XCTAssertNil(ForkRestore.unpack(root.appendingPathComponent("fake.zip"), into: into))
+        XCTAssertNil(ForkRestore.unpack(root.appendingPathComponent("missing.zip"), into: into))
+    }
+
+    func testALinkInAZipIsNotFollowed() throws {
+        let packed = root.appendingPathComponent("Linked", isDirectory: true)
+        try write("secret", "outside.txt", in: root)
+        try write("fine", "containers.json", in: packed)
+        try FileManager.default.createSymbolicLink(
+            at: packed.appendingPathComponent("bookmarks.json"), withDestinationURL: root.appendingPathComponent("outside.txt"))
+        let file = try zip(packed, as: "linked.zip")
+        let folder = try XCTUnwrap(ForkRestore.unpack(file, into: root.appendingPathComponent("unpacked", isDirectory: true)))
+        XCTAssertEqual(ForkRestore.files(of: folder).map(\.lastPathComponent), ["containers.json"])
+    }
 }
