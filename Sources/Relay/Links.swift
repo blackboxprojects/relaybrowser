@@ -103,6 +103,8 @@ final class Links: NSObject, NSApplicationDelegate {
         // their way to the disk.
         Disk.drain()
         // Fork: a copy of it all in iCloud Drive.
+        // Fork: the private VPN's helper doesn't outlive Relay.
+        MainActor.assumeIsolated { PrivateVPN.shared.stop() }
         // Unless this is the quit of a restore: then what is there is kept
         // apart, and the chosen backup goes in last of all (ForkRestore).
         if MainActor.assumeIsolated({ ForkRestore.atQuit() }) { return }
@@ -191,6 +193,8 @@ final class Links: NSObject, NSApplicationDelegate {
             Launcher.shared.start()
             // Live folders fetched, and kept fresh (LiveFolders.swift).
             LiveFolders.start()
+            // Fork: the tunnel private tabs go through, if that is on.
+            PrivateVPN.shared.start()
         }
         let plain = notification.userInfo?[NSApplication.launchIsDefaultUserInfoKey] as? Bool ?? true
         guard !plain else { return }

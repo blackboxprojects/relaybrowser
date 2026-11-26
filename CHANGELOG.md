@@ -11,6 +11,22 @@ in [ROADMAP.md](ROADMAP.md).
 
 ## Unreleased
 
+## 1.0.25 — 26 November 2026
+
+### Added
+
+- Private VPN (Settings › Custom): a WireGuard file from a VPN provider,
+  used by private tabs only. Relay runs wireproxy, downloaded on request
+  and checked, to hold the tunnel; with the switch on and no tunnel,
+  private tabs load nothing rather than go out directly.
+- A Settings button right of the extensions, with the buttons beside the
+  address.
+- Hide the address bar (Settings › Custom › Top bar): the bar is tucked
+  away and the page takes its room; the pointer at the window's edge
+  slides it back.
+- Window buttons at the bottom (Settings › Custom): close, minimise and
+  zoom at the foot of the tab column instead of its top corner.
+
 ## 1.0.24 — 26 November 2026
 
 ### Added

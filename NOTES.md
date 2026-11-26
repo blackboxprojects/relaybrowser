@@ -1,3 +1,5 @@
+Private tabs can go through a VPN: in Settings › Custom › Private VPN choose a WireGuard file from your provider and turn it on; Relay fetches the small helper it needs, and private tabs load nothing if the tunnel is down. Also in Settings › Custom: Hide the address bar tucks the top bar away until the pointer touches the window's edge, and Window buttons at the bottom moves close, minimise and zoom to the foot of the tab column. A Settings button now sits right of the extensions beside the address.
+
 Relay now comes with uBlock Origin Lite, fetched from the Chrome Web Store the first time it runs. Restore takes a ZIP too: Settings › Custom › Backup › Restore › From a ZIP… offers whatever backup files the ZIP holds, such as settings.plist, containers.json and container-rules.json.
 
 A site kept to a container that has a space of its own now opens in that space, not in the one the window was on. Settings › Containers lists the site rules by container name, a tab group's title in the column is the size chosen for tab titles, and updates install on their own unless switched off.

@@ -172,13 +172,21 @@ struct SideBar: View {
     private var lightsBand: CGFloat {
         // Fork: the column starts under the bar across the top (see
         // RootView's Fold), so it has nothing of the window's to clear.
-        prefs.barTop ? 6 : browser.fullScreen ? 8 : Metrics.iconLights
+        prefs.barTop ? 6 : browser.fullScreen || prefs.lightsFoot ? 8 : Metrics.iconLights
     }
     /// What sits above the pins: the lights' band, and with icons only the
     /// three doors under it.
     private var top: CGFloat {
-        !icons ? (prefs.barTop ? 0 : Metrics.strip) : !strip ? lightsBand + (prefs.topRow ? 0 : Metrics.helmDoors(prefs) + 8) : lightsBand + (stripUp && !prefs.topDoors ? stackedDoors : 0)
+        !icons ? firstRow : !strip ? lightsBand + (prefs.topRow ? 0 : Metrics.helmDoors(prefs) + 8) : lightsBand + (stripUp && !prefs.topDoors ? stackedDoors : 0)
     }
+    /// Fork: the column's first row, widened: the lights' and the doors'.
+    /// Under the bar across the top it has neither and is gone; with the
+    /// window's buttons at the foot and the doors in that bar, tucked away
+    /// or not, only a little air is left above the tabs.
+    private var firstRow: CGFloat {
+        prefs.barTop ? 0 : bareTop ? 8 : Metrics.strip
+    }
+    private var bareTop: Bool { prefs.barTop || prefs.lightsFoot && prefs.topRow }
     private var innerEdge: Alignment { onRight ? .leading : .trailing }
 
     /// The window's buttons' corner: gone in full screen, where macOS takes
@@ -249,7 +257,8 @@ struct SideBar: View {
     /// column's end once narrowed, and the column, centred, slid its rows
     /// off the left and the door under the zoom button (idea 1010).
     @MainActor static func lights(_ width: CGFloat, fullScreen: Bool, fold: Bool, prefs: Preferences) -> CGFloat {
-        fullScreen ? 0 : max(0, min(Metrics.sideLights, width - 2 * Metrics.sideEdge - Metrics.helmDoors(prefs) - foldDoor(fold)))
+        // Fork: at the column's foot they take none of its first row.
+        fullScreen || prefs.lightsFoot ? 0 : max(0, min(Metrics.sideLights, width - 2 * Metrics.sideEdge - Metrics.helmDoors(prefs) - foldDoor(fold)))
     }
     /// The fold door, when asked for, only where it fits clear of the zoom
     /// button (Metrics.sideLightsLeast): narrower, it goes, as Safari's does,
@@ -297,7 +306,8 @@ struct SideBar: View {
                     // The doors, when they are up here, at its far end.
                     DragStrip(trailing: doorsTop ? upRoom + Metrics.sideEdge : 0, menu: columnMenu)
                 }
-                .frame(height: Metrics.strip)
+                // Fork: no taller than the air left above the tabs.
+                .frame(height: bareTop && !prefs.barTop ? firstRow : Metrics.strip)
             }
 
             VStack(alignment: .leading, spacing: 0) {
@@ -331,7 +341,7 @@ struct SideBar: View {
                     }
                     // Fork: widened under the bar across the top, the column
                     // has no row of its own for the lights and the doors.
-                    .frame(height: prefs.barTop ? 0 : Metrics.strip)
+                    .frame(height: firstRow)
                     // At the column's far end, fading out as the foot rises,
                     // and back (settleDoors). Laid over the row, the width
                     // let go at, not the one held: sized to the edge as it
@@ -346,8 +356,8 @@ struct SideBar: View {
                                 .accessibilityHidden(!doorsTop)
                         }
                     }
-                    .opacity(prefs.barTop ? 0 : 1)
-                    .allowsHitTesting(!prefs.barTop)
+                    .opacity(bareTop ? 0 : 1)
+                    .allowsHitTesting(!bareTop)
                     // The page's address, when it is to be in sight.
                     if prefs.addressLine && !prefs.restsAsIcons {
                         AddressLine(browser: browser, height: prefs.sideRow)
@@ -376,7 +386,8 @@ struct SideBar: View {
             }
             .padding(.bottom, (browser.player == nil ? 0 : rowHeight + SideBar.playerGap)
                      + (agentHere && !icons ? agentCard + SideBar.playerGap : 0)
-                     + (updateHere ? rowHeight + SideBar.playerGap : 0))
+                     + (updateHere ? rowHeight + SideBar.playerGap : 0)
+                     + (prefs.lightsFoot ? FootLights.room(stacked: icons) : 0))
 
             VStack(spacing: 0) {
                 Spacer()
@@ -418,6 +429,15 @@ struct SideBar: View {
                         .transaction(value: doorsFoot) { $0.animation = nil }
                         .allowsHitTesting(doorsFoot)
                         .accessibilityHidden(!doorsFoot)
+                }
+                // Fork: the window's buttons, under everything else, side
+                // by side or, in the column of icons, one above the other.
+                if prefs.lightsFoot {
+                    FootLights(browser: browser, stacked: icons)
+                        .frame(maxWidth: .infinity, alignment: icons ? .center : .leading)
+                        .padding(.leading, icons ? 0 : Metrics.sideEdge + 6)
+                        .padding(.top, FootLights.above)
+                        .padding(.bottom, FootLights.below)
                 }
             }
         }
@@ -1823,6 +1843,8 @@ struct SideFoot: View {
                 if !prefs.hidesBookmarksDoor { BookmarkDoor(browser: browser, arrowEdge: .bottom) }
                 SpaceButtons(browser: browser)
                 ExtensionSlot(browser: browser, edge: .bottom, room: room, puzzle: !prefs.hidesExtensionsDoor, live: live)
+                // Fork: Settings, at the far end, right of the extensions.
+                Door(icon: "gearshape", on: browser.tuning, help: "Settings") { browser.tuning.toggle() }
             }
         } else {
             HStack(spacing: 2) {
@@ -1884,6 +1906,7 @@ struct SideFoot: View {
         if prefs.showsProfileDoor { kept += 1 }
         // Up, downloads keep their place whether running or not.
         if up || FetchDoor.shows(fetches, prefs, hanging: browser.downloadsHanging) { kept += 1 }
+        if up { kept += 1 }  // Fork: Settings, up there only
         let free = (up ? width : width - 2 * Metrics.sideEdge) + 2 - CGFloat(kept) * door
         return max(0, Int((free / door).rounded(.down)))
     }

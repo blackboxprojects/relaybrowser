@@ -479,6 +479,8 @@ final class Favicons {
             // A favicon names the site you are on, so it goes the way the
             // page did, private tabs included (Proxy.swift).
             ProxyNetwork.stamp(config)
+            // Fork: a private tab's, through the private VPN when that is on.
+            if shy, let vpn = PrivateVPNProxy.configuration { config.proxyConfigurations = [vpn] }
             return config
         }())
         defer { session.invalidateAndCancel() }

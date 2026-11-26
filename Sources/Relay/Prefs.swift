@@ -283,7 +283,16 @@ final class Preferences: ObservableObject {
     var topDoors: Bool { topRow && topBarDoors }
     /// Fork: that bar along the window's bottom instead of its top.
     @Published var barAtBottom: Bool { didSet { store.set(barAtBottom, forKey: "fork.barBottom") } }
-    var barTop: Bool { topRow && !barAtBottom }
+    /// Fork: that bar out of sight until the pointer reaches the window's
+    /// edge. Tucked away it is no row of the window's: the column keeps
+    /// the window's buttons, as it does with the bar along the bottom.
+    @Published var barHides: Bool { didSet { store.set(barHides, forKey: "fork.barHides") } }
+    var barTop: Bool { topRow && !barAtBottom && !barHides }
+    /// Fork: the window's close, minimise and zoom buttons at the foot of
+    /// the tab column instead of its top corner. Only with the tabs down
+    /// the side: across the top there is no foot to put them at.
+    @Published var lightsAtFoot: Bool { didSet { store.set(lightsAtFoot, forKey: "fork.lightsFoot") } }
+    var lightsFoot: Bool { sidebar && lightsAtFoot }
     /// Fork: the hairlines under the bar and along the column's edge.
     @Published var showsOutlines: Bool { didSet { store.set(showsOutlines, forKey: "fork.outlines") } }
     /// Fork: the thin bracket beside a group's tiles in the column of icons.
@@ -1388,6 +1397,8 @@ final class Preferences: ObservableObject {
         topBar = store.object(forKey: "fork.topBar") as? Bool ?? true
         topBarDoors = store.object(forKey: "fork.topBarDoors") as? Bool ?? true
         barAtBottom = store.bool(forKey: "fork.barBottom")
+        barHides = store.bool(forKey: "fork.barHides")
+        lightsAtFoot = store.bool(forKey: "fork.lightsFoot")
         showsOutlines = store.bool(forKey: "fork.outlines")
         groupBracket = store.bool(forKey: "fork.groupBracket")
         flushTabs = store.bool(forKey: "fork.flushTabs")

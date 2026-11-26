@@ -99,6 +99,7 @@ final class Lights: NSObject {
         guard !placing, let window, !window.styleMask.contains(.fullScreen) else { return false }
         let buttons = self.buttons
         guard buttons.count == 3, let bar = buttons[0].superview, let container = bar.superview else { return false }
+        if buttons.contains(where: { $0.isHidden != Shared.prefs.lightsFoot }) { return true }
         if container.frame.height != band(window) || container.frame.maxY != window.frame.height { return true }
         for (index, button) in buttons.enumerated() where button.frame.origin != origin(of: button, at: index, in: bar, window) {
             return true
@@ -128,6 +129,10 @@ final class Lights: NSObject {
     static let stackTop: CGFloat = 22
 
     @objc private func place() {
+        // Fork: with the buttons at the column's foot (FootLights) the
+        // title bar's own are put out of sight, full screen included.
+        let away = Shared.prefs.lightsFoot
+        for button in buttons where button.isHidden != away { button.isHidden = away }
         // Full screen keeps its title bar in a window of its own, laid out by
         // macOS; it is left to it.
         guard !placing, let window, !window.styleMask.contains(.fullScreen) else { return }

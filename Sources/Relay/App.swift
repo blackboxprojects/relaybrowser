@@ -632,6 +632,10 @@ struct ContentView: View {
     /// follows `farGap`.
     @State private var farRoom: CGFloat?
     @State private var roomTicket = 0
+    /// Fork: the address bar tucked away (Hide the address bar) is out,
+    /// under the pointer.
+    @State private var barOut = false
+    @State private var barWatch = BarWatch()
     @Environment(\.displayScale) private var displayScale
     @State private var immersionRevision = 0
     /// The window's width, for a side panel that leaves the page some room.
@@ -746,24 +750,42 @@ struct ContentView: View {
                     // the profile, downloads, bookmarks and the extensions.
                     if browser.prefs.topBarDoors {
                         SideFoot(browser: browser, prefs: browser.prefs, fetches: browser.fetches, up: true,
-                                 width: SideFoot.keptWidth(browser.prefs, spaces: SpaceButtons.count(browser.prefs, browser.spaces)) + 4 * 28)
+                                 width: SideFoot.keptWidth(browser.prefs, spaces: SpaceButtons.count(browser.prefs, browser.spaces)) + 5 * 28)
                             .fixedSize()
                     }
                 }
-                // Along the bottom the window's buttons aren't in it.
-                .padding(.leading, sideOnRight || browser.fullScreen || barBottom ? 10 : Metrics.sideLights + 10)
-                .padding(.trailing, sideOnRight && !browser.fullScreen && !barBottom ? Metrics.sideLights : 10)
-                .frame(height: addressRoom + bottomRoom)
+                // Along the bottom the window's buttons aren't in it, nor
+                // tucked away: the column keeps them.
+                .padding(.leading, sideOnRight || browser.fullScreen || barBottom || barHides || browser.prefs.lightsFoot ? 10 : Metrics.sideLights + 10)
+                .padding(.trailing, sideOnRight && !browser.fullScreen && !barBottom && !barHides && !browser.prefs.lightsFoot ? Metrics.sideLights : 10)
+                .frame(height: barHides ? ForkBar.height : addressRoom + bottomRoom)
                 .background { DragStrip() }
+                // Over the page it needs a ground of its own.
+                .background { if barHides { Palette.ground } }
                 // A bar of its own, the window's width; a line along it
-                // only with outlines on (Custom).
+                // only with outlines on (Custom), or over the page.
                 .overlay(alignment: barBottom ? .top : .bottom) {
-                    if browser.prefs.showsOutlines { Rectangle().fill(Palette.hairline).frame(height: 1) }
+                    if browser.prefs.showsOutlines || barHides { Rectangle().fill(Palette.hairline).frame(height: 1) }
                 }
                 .padding(.top, barBottom ? 0 : band)
+                // Tucked away: off the window's edge, and back under the
+                // pointer. Kept in the window either way, so what hangs
+                // from it has something to hang from.
+                .offset(y: barShowing ? 0 : (barBottom ? 1 : -1) * (ForkBar.height + 2))
+                .opacity(barShowing ? 1 : 0)
+                .allowsHitTesting(barShowing)
+                .padding(.leading, barHides ? (sideOnRight ? farGap : chrome.width) : 0)
+                .padding(.trailing, barHides ? (sideOnRight ? chrome.width : farGap) : 0)
                 .frame(maxHeight: .infinity, alignment: barBottom ? .bottom : .top)
                 .zIndex(2)
                 .transition(.opacity)
+                .animation(Motion.glide, value: barShowing)
+            }
+            if barHides {
+                BarEdge(bottom: barBottom) { distance, left in barPointer(distance, left: left) }
+                    .padding(.leading, sideOnRight ? farGap : chrome.width)
+                    .padding(.trailing, sideOnRight ? chrome.width : farGap)
+                    .zIndex(3)
             }
         }
         .ignoresSafeArea()
@@ -867,7 +889,7 @@ struct ContentView: View {
             // Folded away, edge to edge (see `edgeToEdge`).
             let gap = edgeToEdge ? 0 : Metrics.cardGap
             return CGSize(width: sidebar ? sideWidth : gap,
-                          height: barShown || addressTop ? bar + addressRoom : gap)
+                          height: barShown || barKept ? bar + addressRoom : gap)
         }
         return CGSize(width: sidebar ? sideWidth : 0, height: band + bar + addressRoom)
     }
@@ -908,10 +930,48 @@ struct ContentView: View {
     private var addressTop: Bool {
         browser.prefs.sidebar && browser.prefs.restsAsIcons && browser.prefs.addressLine && !browser.folded && fullscreenTab == nil
     }
-    private var addressRoom: CGFloat { addressTop && !browser.prefs.barAtBottom ? Metrics.strip : 0 }
+    /// Fork: tucked away (Hide the address bar), that bar takes no room: it
+    /// comes out over the page, beside the column.
+    private var barHides: Bool { addressTop && browser.prefs.barHides }
+    private var barKept: Bool { addressTop && !browser.prefs.barHides }
+    private var addressRoom: CGFloat { barKept && !browser.prefs.barAtBottom ? Metrics.strip : 0 }
     /// Fork: the same bar along the bottom instead, and the room it takes.
     private var barBottom: Bool { addressTop && browser.prefs.barAtBottom }
-    private var bottomRoom: CGFloat { barBottom ? ForkBar.height : 0 }
+    private var bottomRoom: CGFloat { barBottom && barKept ? ForkBar.height : 0 }
+    /// Out while the pointer holds it, and while its address is typed in.
+    private var barShowing: Bool { !barHides || barOut || browser.editingInline }
+
+    /// The pointer moved over the page, this far from the bar's edge of the
+    /// window, or left the window there. Nothing is written while the bar
+    /// is away and the pointer nowhere near: most moves are those.
+    private func barPointer(_ distance: CGFloat, left: Bool) {
+        if ForkBar.holds(distance: distance, out: barOut) {
+            barWatch.ticket += 1
+            barWatch.waiting = false
+            if !barOut { barOut = true }
+            // Past the edge and out of the window, the pointer says no
+            // more: not kept out for one that never comes back.
+            if left { putBarAway(after: 1.5) }
+        } else if barOut, !barWatch.waiting {
+            putBarAway(after: 0.35)
+        }
+    }
+
+    private func putBarAway(after wait: Double) {
+        barWatch.waiting = true
+        let ticket = barWatch.ticket
+        DispatchQueue.main.asyncAfter(deadline: .now() + wait) {
+            guard ticket == barWatch.ticket else { return }
+            // A card or a menu hanging from the bar keeps it: put away
+            // under one, it left the card hanging from nothing.
+            if browser.window?.childWindows?.contains(where: \.isVisible) == true {
+                putBarAway(after: 0.5)
+                return
+            }
+            barWatch.waiting = false
+            barOut = false
+        }
+    }
 
     /// The page as a card on the window's ground: with the tabs down the
     /// side, the column out or folded away, the switch on, and neither the
@@ -1251,6 +1311,10 @@ struct ContentView: View {
                 browser.paintGround(window)
             }
             .onChange(of: browser.glassy) { _, _ in browser.paintGround(window) }
+            // Fork: to the column's foot and back.
+            .onChange(of: browser.prefs.lightsFoot) { _, _ in
+                DispatchQueue.main.async { Lights.refresh(window); measureLights() }
+            }
             // The lights sit on the strip's middle, which moves with its height.
             .onChange(of: browser.prefs.compactStrip) { _, _ in
                 DispatchQueue.main.async { Lights.refresh(window); measureLights() }
@@ -1278,7 +1342,8 @@ struct ContentView: View {
                 // brings its own buttons down with the title bar, and ours,
                 // left where the window's buttons were before, made a second
                 // row of them under it (idea 929).
-                resting?.isHidden = window?.styleMask.contains(.fullScreen) ?? false
+                // Fork: nor with the buttons at the column's foot.
+                resting?.isHidden = (window?.styleMask.contains(.fullScreen) ?? false) || browser.prefs.lightsFoot
                 // Only the window you were in, or every window's video would come.
                 browser.appLeft()
             }
@@ -1502,7 +1567,7 @@ struct ContentView: View {
         view.spots = [NSWindow.ButtonType.closeButton, .miniaturizeButton, .zoomButton]
             .compactMap { window.standardWindowButton($0) }
             .map { $0.convert($0.bounds, to: titlebar) }
-        view.isHidden = NSApp.isActive || window.styleMask.contains(.fullScreen)
+        view.isHidden = NSApp.isActive || window.styleMask.contains(.fullScreen) || browser.prefs.lightsFoot
     }
 
     /// The window, once there is one: held, dressed, and named for the page
@@ -2478,4 +2543,11 @@ private struct ImportProgress: View {
             .disabled(job.cancelling)
         }
     }
+}
+
+/// Fork: what the tucked-away address bar's timer goes by, kept out of the
+/// view's state: the pointer's every move changes it, and nothing drawn does.
+final class BarWatch {
+    var ticket = 0
+    var waiting = false
 }

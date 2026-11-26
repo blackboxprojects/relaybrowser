@@ -101,6 +101,9 @@ enum Web {
         // A private tab's store is made right here and is in no list, so the
         // proxy is put on it here too, or a private tab alone would go direct.
         if shy { let own = config.websiteDataStore; MainActor.assumeIsolated { BrowserProxy.shared.attach(own) } }
+        // Fork: and after it the private VPN's, which takes its place on a
+        // private tab while that switch is on (PrivateVPN.swift).
+        if shy, store == nil { let own = config.websiteDataStore; MainActor.assumeIsolated { PrivateVPN.shared.attach(own) } }
         // Web notifications go through the store (see Notifications.swift);
         // a private tab's is left without, and a page there is refused.
         if !shy { let kept = config.websiteDataStore; MainActor.assumeIsolated { SiteNotifications.shared.attach(kept) } }

@@ -307,6 +307,8 @@ final class BrowserProxy: ObservableObject {
         ProxyNetwork.keep(proxy)
         let configurations = [proxy].compactMap { $0 }
         for store in stores.allObjects { store.proxyConfigurations = configurations }
+        // Fork: private tabs keep the private VPN, when that is on.
+        PrivateVPN.shared.restamp()
     }
 
     var savedPassword: String { password }

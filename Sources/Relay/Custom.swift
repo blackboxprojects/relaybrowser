@@ -6,6 +6,56 @@ import SwiftUI
 /// Fork: the bar the address has to itself, top or bottom.
 enum ForkBar {
     static let height: CGFloat = 38
+    /// Tucked away (Hide the address bar): this near the window's edge the
+    /// pointer brings it out.
+    static let edge: CGFloat = 5
+    /// And this far past the bar it may stray before the bar goes back.
+    static let slack: CGFloat = 8
+
+    /// Whether the pointer holds the tucked-away bar out, by how far it is
+    /// from the window's edge the bar comes from: less than nothing is past
+    /// the edge, out of the window. Out already, the bar stays while the
+    /// pointer is on it or just off it; away, only the edge brings it out.
+    static func holds(distance: CGFloat, out: Bool) -> Bool {
+        distance <= (out ? height + slack : edge)
+    }
+}
+
+/// Fork: the pointer's moves over the page, for the bar tucked away. Never
+/// in the way of a click, and no state of its own: it only says how far the
+/// pointer is from the edge, and whether it has left the window.
+struct BarEdge: NSViewRepresentable {
+    var bottom = false
+    let moved: (_ distance: CGFloat, _ left: Bool) -> Void
+
+    func makeNSView(context: Context) -> Watch { Watch() }
+    func updateNSView(_ view: Watch, context: Context) {
+        view.bottom = bottom
+        view.moved = moved
+    }
+
+    final class Watch: NSView {
+        var bottom = false
+        var moved: ((CGFloat, Bool) -> Void)?
+
+        override func hitTest(_ point: NSPoint) -> NSView? { nil }
+
+        override func updateTrackingAreas() {
+            super.updateTrackingAreas()
+            for area in trackingAreas { removeTrackingArea(area) }
+            addTrackingArea(NSTrackingArea(rect: .zero, options: [.mouseEnteredAndExited, .mouseMoved, .activeAlways, .inVisibleRect], owner: self))
+        }
+
+        override func mouseEntered(with event: NSEvent) { say(event, left: false) }
+        override func mouseMoved(with event: NSEvent) { say(event, left: false) }
+        override func mouseExited(with event: NSEvent) { say(event, left: true) }
+
+        private func say(_ event: NSEvent, left: Bool) {
+            let point = convert(event.locationInWindow, from: nil)
+            let fromTop = isFlipped ? point.y : bounds.height - point.y
+            moved?(bottom ? bounds.height - fromTop : fromTop, left)
+        }
+    }
 }
 
 enum TabFont {
@@ -52,6 +102,11 @@ struct CustomSettings: View {
                 SettingRow(icon: "square", title: "Outlines",
                            detail: "A thin line under the address bar and along the tab column's edge.") {
                     Switch(on: $prefs.showsOutlines)
+                }
+                Rule()
+                SettingRow(icon: "macwindow", title: "Window buttons at the bottom",
+                           detail: "Close, minimise and zoom sit at the foot of the tab column instead of its top corner.") {
+                    Switch(on: $prefs.lightsAtFoot)
                 }
                 Rule()
                 SettingRow(icon: "line.diagonal", title: "Group bracket",
@@ -118,8 +173,13 @@ struct CustomSettings: View {
                     Switch(on: $prefs.barAtBottom)
                 }
                 Rule()
+                SettingRow(icon: "eye.slash", title: "Hide the address bar",
+                           detail: "Tucks that bar away and gives the page its room. It slides back when the pointer touches the window's edge; ⌘L still brings up the address.") {
+                    Switch(on: $prefs.barHides)
+                }
+                Rule()
                 SettingRow(icon: "puzzlepiece.extension", title: "Buttons beside the address",
-                           detail: "Profile, downloads, bookmarks and extensions sit right of the address instead of in the tab column.") {
+                           detail: "Profile, downloads, bookmarks, extensions and Settings sit right of the address instead of in the tab column.") {
                     Switch(on: $prefs.topBarDoors)
                 }
             }
@@ -179,6 +239,7 @@ struct CustomSettings: View {
                 if restoring { RestorePanel() }
             }
         }
+        PrivateVPNSettings()
         GroupBlock(title: "Tab text", icon: "textformat") {
             Card {
                 SettingRow(icon: "textformat", title: "Font",
@@ -310,5 +371,96 @@ enum ForkIcon {
         ) { _ in
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { MainActor.assumeIsolated { apply() } }
         }
+    }
+}
+
+/// Fork: the window's close, minimise and zoom buttons at the foot of the tab
+/// column (Window buttons at the bottom). Drawn here, not AppKit's: the
+/// title bar's own are tied to the title bar, whose height is the strip's,
+/// and a second set made for another place came out grey and cut off. The
+/// title bar's are hidden meanwhile (Lights.place).
+struct FootLights: View {
+    @ObservedObject var browser: Browser
+    /// One above the other, in the column of icons.
+    var stacked = false
+    @State private var over = false
+    @Environment(\.controlActiveState) private var active
+
+    static let button: CGFloat = 12
+    static let gap: CGFloat = 8
+    static let above: CGFloat = 6
+    static let below: CGFloat = 12
+
+    static func size(stacked: Bool) -> CGSize {
+        let run = 3 * button + 2 * gap
+        return stacked ? CGSize(width: button, height: run) : CGSize(width: run, height: button)
+    }
+    /// What they take from the column's rows.
+    static func room(stacked: Bool) -> CGFloat { size(stacked: stacked).height + above + below }
+
+    enum Kind: CaseIterable {
+        case close, minimise, zoom
+
+        var colour: Color {
+            switch self {
+            case .close: return Color(red: 1, green: 0.373, blue: 0.341)
+            case .minimise: return Color(red: 0.996, green: 0.737, blue: 0.180)
+            case .zoom: return Color(red: 0.157, green: 0.784, blue: 0.251)
+            }
+        }
+        var sign: String {
+            switch self {
+            case .close: return "xmark"
+            case .minimise: return "minus"
+            case .zoom: return "arrow.up.left.and.arrow.down.right"
+            }
+        }
+        var name: String {
+            switch self {
+            case .close: return "Close"
+            case .minimise: return "Minimise"
+            case .zoom: return "Full Screen"
+            }
+        }
+    }
+
+    /// What a press does, as the title bar's own: the green one fills the
+    /// screen, or with Option held zooms the window.
+    @MainActor static func press(_ kind: Kind, in window: NSWindow?, option: Bool) {
+        guard let window else { return }
+        switch kind {
+        case .close: window.performClose(nil)
+        case .minimise: window.miniaturize(nil)
+        case .zoom: option ? window.zoom(nil) : window.toggleFullScreen(nil)
+        }
+    }
+
+    var body: some View {
+        let layout = stacked ? AnyLayout(VStackLayout(spacing: Self.gap)) : AnyLayout(HStackLayout(spacing: Self.gap))
+        layout {
+            ForEach(Array(Kind.allCases.enumerated()), id: \.offset) { _, kind in
+                Button {
+                    Self.press(kind, in: browser.window, option: NSEvent.modifierFlags.contains(.option))
+                } label: {
+                    Circle()
+                        // Behind another window they rest grey, as the title bar's do.
+                        .fill(active == .inactive ? Color.gray.opacity(0.45) : kind.colour)
+                        .overlay {
+                            if over {
+                                Image(systemName: kind.sign)
+                                    .font(.system(size: 7, weight: .heavy))
+                                    .foregroundStyle(Color.black.opacity(0.6))
+                            }
+                        }
+                        .frame(width: Self.button, height: Self.button)
+                        .contentShape(Circle())
+                }
+                .buttonStyle(.plain)
+                .disabled(kind == .minimise && browser.fullScreen)
+                .help(kind.name)
+                .accessibilityLabel(kind.name)
+            }
+        }
+        .onHover { over = $0 }
     }
 }
