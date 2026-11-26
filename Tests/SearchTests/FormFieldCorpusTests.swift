@@ -2,7 +2,7 @@ import AppKit
 import Foundation
 import WebKit
 import XCTest
-@testable import Search
+@testable import Relay
 
 /// Which boxes saved accounts are offered in (#631), on real-world forms kept
 /// in Tests/FieldFixtures: Forms.script's judge, run in Search's own world as

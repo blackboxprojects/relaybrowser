@@ -1,5 +1,5 @@
 import XCTest
-@testable import Search
+@testable import Relay
 
 /// Sync with iCloud and Handoff on for a new install, left as they were for
 /// one from before (SyncDefault.swift), and nothing started before the
@@ -167,7 +167,7 @@ final class SyncDefaultTests: XCTestCase {
         XCTAssertFalse(icloud.isScheduled)
         XCTAssertNil(icloud.engine)
         XCTAssertNil(icloud.problem)
-        XCTAssertTrue(["Needs a build of Search signed for iCloud", "Off in a test run"]
+        XCTAssertTrue(["Needs a build of Relay signed for iCloud", "Off in a test run"]
             .contains(icloud.summary(folderSyncOn: false, otherwise: "off")))
         // And it can be turned off again.
         icloud.turnOff()

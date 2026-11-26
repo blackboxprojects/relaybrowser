@@ -1,6 +1,6 @@
 import Foundation
 import XCTest
-@testable import Search
+@testable import Relay
 
 /// What ExtensionSandbox serves, to whom, and which extensions may have eval
 /// left to each frame's policy. Eval in the frames themselves is

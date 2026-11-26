@@ -1,7 +1,7 @@
 import AppKit
 import CryptoKit
 import XCTest
-@testable import Search
+@testable import Relay
 
 @MainActor
 final class FaviconMemoryTests: XCTestCase {

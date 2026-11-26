@@ -1,6 +1,6 @@
 import Foundation
 import XCTest
-@testable import Search
+@testable import Relay
 
 /// Sync with iCloud (ICloudSync.swift), against SYNC.md in Search-iOS: the
 /// JSON both apps read, latest wins, joining merges, no echo, what never
@@ -682,7 +682,7 @@ final class ICloudSyncTests: XCTestCase {
         sync.turnOn()
         XCTAssertFalse(sync.on)
         XCTAssertFalse(sync.isScheduled)
-        XCTAssertEqual(sync.summary(folderSyncOn: false, otherwise: "x"), "Needs a build of Search signed for iCloud")
+        XCTAssertEqual(sync.summary(folderSyncOn: false, otherwise: "x"), "Needs a build of Relay signed for iCloud")
     }
 
     func testTurningOffTakesOnlyThisMacsTabsAway() async {

@@ -1,5 +1,5 @@
 import XCTest
-@testable import Search
+@testable import Relay
 
 /// Profiles (Profiles.swift): what each keeps apart in its files — its
 /// spaces, its pins every space shows, its history — and what an older

@@ -3,7 +3,7 @@ import Combine
 import Foundation
 import WebKit
 import XCTest
-@testable import Search
+@testable import Relay
 
 @MainActor
 final class FetchEntryTests: XCTestCase {

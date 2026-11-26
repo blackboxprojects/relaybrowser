@@ -1,7 +1,7 @@
 import AppKit
 import SwiftUI
 import XCTest
-@testable import Search
+@testable import Relay
 
 /// A tab carried from the column onto the page splits it again (#625 left
 /// it doing nothing): the press opens the tab, so the page under the hand
@@ -119,7 +119,7 @@ final class SidebarSplitDragTests: XCTestCase {
 
     // MARK: - helpers
 
-    private func setUp() async throws -> (Browser, [Search.Tab], NSWindow) {
+    private func setUp() async throws -> (Browser, [Relay.Tab], NSWindow) {
         _ = NSApplication.shared
         activationPolicy = NSApp.activationPolicy()
         NSApp.setActivationPolicy(.prohibited)

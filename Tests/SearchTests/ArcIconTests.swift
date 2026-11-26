@@ -1,5 +1,5 @@
 import XCTest
-@testable import Search
+@testable import Relay
 
 /// Spaces brought over from Arc keep their icon (#832).
 final class ArcIconTests: XCTestCase {

@@ -13,3 +13,7 @@ __pycache__/
 *.provisionprofile
 *.p12
 *.mobileprovision
+
+# Fork: the build's log, and Claude Code's session files.
+build-log.txt
+.claude/

@@ -1,6 +1,6 @@
 import Foundation
 import XCTest
-@testable import Search
+@testable import Relay
 
 @MainActor
 final class HistoryLoadingTests: XCTestCase {

@@ -1,6 +1,6 @@
 import AppKit
 import XCTest
-@testable import Search
+@testable import Relay
 
 @MainActor
 final class PeekReloadTests: XCTestCase {
@@ -48,7 +48,7 @@ final class PeekReloadTests: XCTestCase {
         XCTAssertEqual(destination.count("/page"), peekRequests)
     }
 
-    private func waitForPage(_ tab: Search.Tab, afterReload: Bool = false) async throws {
+    private func waitForPage(_ tab: Relay.Tab, afterReload: Bool = false) async throws {
         let deadline = Date().addingTimeInterval(15)
         while Date() < deadline {
             if !tab.loading, !tab.web.isLoading,

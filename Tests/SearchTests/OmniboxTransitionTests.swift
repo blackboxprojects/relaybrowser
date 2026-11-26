@@ -1,7 +1,7 @@
 import AppKit
 import SwiftUI
 import XCTest
-@testable import Search
+@testable import Relay
 
 @MainActor
 final class OmniboxTransitionTests: XCTestCase {

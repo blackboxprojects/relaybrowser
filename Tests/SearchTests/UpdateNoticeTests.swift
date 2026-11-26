@@ -1,7 +1,7 @@
 import AppKit
 import SwiftUI
 import XCTest
-@testable import Search
+@testable import Relay
 
 /// "Update ready" (UpdateNotice.swift): at the foot of the column and as a
 /// pill at the strip's far end while a newer build waits, never otherwise.

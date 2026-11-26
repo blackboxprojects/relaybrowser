@@ -1,7 +1,7 @@
 import AppKit
 import WebKit
 import XCTest
-@testable import Search
+@testable import Relay
 
 /// A tab on screen whose page process keeps dying. It used to be loaded
 /// again every time, for ever — the page "refreshing itself" until Search
@@ -75,7 +75,7 @@ final class CrashLoopTests: XCTestCase {
         // Two new tabs, each loaded before the next is asked for, since ⌘T
         // reuses a blank one. The tab the window opened on may be the last
         // test's, brought back with a wake still due for its old address.
-        var halves: [Search.Tab] = []
+        var halves: [Relay.Tab] = []
         for x in [0, 400] {
             browser.newTab()
             let tab = try XCTUnwrap(browser.active)

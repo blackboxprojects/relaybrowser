@@ -1,5 +1,5 @@
 import XCTest
-@testable import Search
+@testable import Relay
 
 /// Settings' rows (SettingsIndex): merged controls write the keys the two
 /// switches did, new defaults reach only keys never touched, and an

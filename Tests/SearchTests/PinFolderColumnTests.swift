@@ -1,7 +1,7 @@
 import AppKit
 import SwiftUI
 import XCTest
-@testable import Search
+@testable import Relay
 
 /// Folders in pinned rows in a real window's model: made, filled, nested,
 /// folded, deleted, the row's order kept as drawn, and the column drawn off
@@ -15,7 +15,7 @@ final class PinFolderColumnTests: XCTestCase {
     private var activationPolicy: NSApplication.ActivationPolicy?
     /// The four tabs makeBrowser made, in order: a session left by the
     /// test before may have brought others back first.
-    private var made: [Search.Tab] = []
+    private var made: [Relay.Tab] = []
 
     override class func setUp() {
         TestWorld.enter()
@@ -258,7 +258,7 @@ final class PinFolderColumnTests: XCTestCase {
     }
 
     /// Four tabs pinned as rows, in order, and a tab in front after them.
-    private func pinned(_ browser: Browser) throws -> (Search.Tab, Search.Tab, Search.Tab, Search.Tab) {
+    private func pinned(_ browser: Browser) throws -> (Relay.Tab, Relay.Tab, Relay.Tab, Relay.Tab) {
         let tabs = made
         XCTAssertEqual(tabs.count, 4)
         for tab in tabs { browser.pin(tab, listed: true) }

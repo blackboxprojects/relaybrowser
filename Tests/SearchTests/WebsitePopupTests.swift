@@ -1,7 +1,7 @@
 import AppKit
 import XCTest
 import WebKit
-@testable import Search
+@testable import Relay
 
 @MainActor
 final class WebsitePopupTests: XCTestCase {

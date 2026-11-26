@@ -2,7 +2,7 @@ import AppKit
 import Foundation
 import WebKit
 import XCTest
-@testable import Search
+@testable import Relay
 
 /// The guess (Reader.script) on pages laid out as newsrooms lay theirs out:
 /// what of an article's head, pictures and frames comes into the reading

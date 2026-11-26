@@ -2,10 +2,10 @@
 import PackageDescription
 
 let package = Package(
-    name: "Search",
+    name: "Relay",
     platforms: [.macOS(.v14)],
     products: [
-        .executable(name: "Search", targets: ["Search"]),
+        .executable(name: "Relay", targets: ["Relay"]),
         // A developer tools package: downloaded on request, never in the
         // app (build.sh devtools, DevToolsPackages.swift).
         .library(name: "DevToolsLite", type: .dynamic, targets: ["DevToolsLite"]),
@@ -37,9 +37,9 @@ let package = Package(
             swiftSettings: [.swiftLanguageMode(.v5)]
         ),
         .executableTarget(
-            name: "Search",
+            name: "Relay",
             dependencies: ["SearchPluginAPI"],
-            path: "Sources/Search",
+            path: "Sources/Relay",
             // Same reasoning as the canvas app next door: the whole interface is
             // main-thread by nature, and Swift 6's strict isolation buys nothing
             // here but ceremony.
@@ -53,7 +53,7 @@ let package = Package(
         ),
         .testTarget(
             name: "SearchTests",
-            dependencies: ["Search", "NoWindows"],
+            dependencies: ["Relay", "NoWindows"],
             path: "Tests/SearchTests",
             swiftSettings: [.swiftLanguageMode(.v5)]
         )

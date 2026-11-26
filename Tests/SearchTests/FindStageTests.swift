@@ -2,7 +2,7 @@ import AppKit
 import SwiftUI
 import WebKit
 import XCTest
-@testable import Search
+@testable import Relay
 
 @MainActor
 final class FindStageTests: XCTestCase {

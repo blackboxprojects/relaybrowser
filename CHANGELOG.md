@@ -11,6 +11,25 @@ in [ROADMAP.md](ROADMAP.md).
 
 ## Unreleased
 
+## 1.0.21 — 25 November 2026
+
+Relay's first release of its own, from `blackboxprojects/relaybrowser`.
+
+### Added
+
+- Containers, built in: a tab can live in a container with sign-ins of its own, apart from every other container's. The crate button in the toolbar opens the menu (open a tab in a container, move this tab into one, make a temporary one, "Always open this site here"); Container Settings names and colours them, keeps the site rules and gives each container a space to open in.
+- New windows can open blank, and File › New Private Window opens one that keeps nothing.
+- Settings › Window › Show only the site in the address bar: `docs.example.com` until the bar is clicked, the whole address then.
+- Sign-ins inside containers are written to disk every half minute, when Relay leaves the front and before it quits, so they are still there after a restart.
+- Relay updates itself from its own releases: the latest GitHub release of `blackboxprojects/relaybrowser` is read each hour, and a newer build is fetched, checked and put in place for the next launch (Settings › About › Install updates on its own, on unless switched off). The feed is signed with a key of Relay's own and names the ZIP's hash, so nothing else is ever installed. `./release.sh` makes a release; `RELEASING.md` is the procedure.
+- Another app can say which profile a link opens in: `relay://open?profile=<profile id>&url=<address>` (the id as `profiles.json` has it, the address percent-encoded) opens the page as a new tab in a window of that profile, with Relay in front, and asks nothing: no panel asking which space, no small window, no Send links to a space rule. Caddie's rules use it to send a link to a Relay profile. Only an http or https address is taken, anything else is dropped; a profile that is missing or unknown opens the address as any link from another app. `python3 Tests/profile_links.py`
+- And which space: `relay://open?space=<space id>&url=<address>` (the id as `spaces.json` has it) opens the page as a new tab in that space, the window switched to it, with Relay in front, and asks nothing in the same way. With both a space and a profile, the space is the one that counts; a space that is missing or unknown, or Spaces turned off, opens the address as any link from another app. The app's Info.plist lists what the link takes under `RelayLinkParameters` (`profile`, `space`), so another app can tell before it offers a choice: Caddie shows its space picker only when `space` is there. `python3 Tests/named_space_links.py`
+
+### Changed
+
+- The margins either side of the tabs are slimmer, in the column of icons and widened (6 points, from 10).
+- Widened from the column of icons, the tab in front no longer shows a second cross over its icon; the one at the right of the row closes it.
+
 ### Fixed
 
 - With profiles in one window, going to another profile's space (⌃1–⌃9, the space's menu, a swipe past the last space) no longer puts that space's name up beside its icon — a profile's first space wears the profile's name, so it popped up on nearly every profile switch. The profile's badge beside it says whose window it is; switching spaces within a profile still names the space for a moment. `python3 Tests/profile_switch_name.py` (idea 1114)

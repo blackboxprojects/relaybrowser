@@ -1,5 +1,5 @@
 import XCTest
-@testable import Search
+@testable import Relay
 
 /// Settings read again while Search runs (Preferences.reread): only the look
 /// and layout of the tabs, the sidebar and the window, read the way launch
@@ -16,7 +16,7 @@ final class FollowFileTests: XCTestCase {
     /// for the reviewer, so the test names every one.
     func testOnlyTheLookAndLayoutAreReadAgain() throws {
         let file = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
-            .deletingLastPathComponent().appendingPathComponent("Sources/Search/Prefs.swift")
+            .deletingLastPathComponent().appendingPathComponent("Sources/Relay/Prefs.swift")
         let source = try String(contentsOf: file, encoding: .utf8)
         let start = try XCTUnwrap(source.range(of: "func reread()"))
         let end = try XCTUnwrap(source.range(of: "func take<", range: start.upperBound..<source.endIndex))
@@ -30,7 +30,7 @@ final class FollowFileTests: XCTestCase {
             // added: the column's slide, buttons at the top, the card in full
             // screen, the address bar and its width, the scroll bars, the glass window and the
             // Liquid Glass tab, the bounce, and ⌘1–⌘9 for spaces.
-            "slidesColumn", "doorsUp", "cardsInFullScreen", "addressLine", "scrollbarsFade", "addressWidth", "glass", "glassGrain",
+            "slidesColumn", "doorsUp", "cardsInFullScreen", "addressLine", "addressSiteOnly", "scrollbarsFade", "addressWidth", "glass", "glassGrain",
             "glassClear", "glassStyle", "liquidTabs", "bounces", "spacesOnCommand",
             // Themes: the empty tab's background is part of the look.
             "homeTheme", "homeThemeImage", "homeTuning", "homeShuffle",

@@ -16,7 +16,7 @@ ordering. These VM checks validate observation mechanics, not native recovery.
 To reproduce the missing notification on upstream main:
 
 ```
-git show 35aa0516fc300031733bb843f334b47baff72232:Sources/Search/ExtensionShims.swift >/tmp/upstream-shim.swift
+git show 35aa0516fc300031733bb843f334b47baff72232:Sources/Relay/ExtensionShims.swift >/tmp/upstream-shim.swift
 node Tests/ExtensionWorkerRecovery/run.js /tmp/upstream-shim.swift
 ```
 

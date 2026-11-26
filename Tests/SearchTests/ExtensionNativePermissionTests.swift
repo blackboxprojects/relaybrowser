@@ -2,7 +2,7 @@ import AppKit
 import Foundation
 import WebKit
 import XCTest
-@testable import Search
+@testable import Relay
 
 /// Whether an extension gets to talk to an app on this Mac, which Search
 /// decides for itself: WebKit's nativeMessaging is granted to every

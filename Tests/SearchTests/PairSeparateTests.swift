@@ -1,7 +1,7 @@
 import AppKit
 import SwiftUI
 import XCTest
-@testable import Search
+@testable import Relay
 
 /// A pair carried down the column comes apart only where that was shown
 /// (#883): the hand at rest over another tab dims the half that stays, and
@@ -128,7 +128,7 @@ final class PairSeparateTests: XCTestCase {
 
     // MARK: - helpers
 
-    private func setUpColumn() async throws -> (Browser, [Search.Tab], NSWindow) {
+    private func setUpColumn() async throws -> (Browser, [Relay.Tab], NSWindow) {
         _ = NSApplication.shared
         activationPolicy = NSApp.activationPolicy()
         NSApp.setActivationPolicy(.prohibited)

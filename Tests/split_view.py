@@ -26,7 +26,10 @@ from pathlib import Path
 
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 ROOT = Path(__file__).resolve().parents[1]
-APP = str(ROOT / "build" / "Search.app")
+# Fork: the probe's own copy of Relay when RELAY_PROBE_APP names one (see
+# probe.sh): this checkout is in iCloud Drive, where build/Relay.app can't be
+# signed, and the Relay in /Applications is the one in use.
+APP = os.environ.get("RELAY_PROBE_APP") or str(ROOT / "build" / "Relay.app")
 HOME = os.path.expanduser("~")
 def use(name):
     """This checkout's own world for a suite: the name, then a tag made from
@@ -36,7 +39,7 @@ def use(name):
     wants a world apart from the split suite's calls it with its own name."""
     global W, SUPPORT, SUITE, SOCK
     W = f"{name}-{hashlib.sha1(str(ROOT).encode()).hexdigest()[:8]}"
-    SUPPORT = f"{HOME}/Library/Application Support/Search ({W})"
+    SUPPORT = f"{HOME}/Library/Application Support/Relay ({W})"
     SUITE = f"com.officecommun.search.test.{W}"
     SOCK = f"{SUPPORT}/bench.sock"
 use("split-tests")
@@ -74,7 +77,14 @@ started = set()
 def running(): return set(subprocess.run(["pgrep", "-f", APP + "/Contents/MacOS"], capture_output=True, text=True).stdout.split())
 def holding(): return set(subprocess.run(["lsof", "-t", "--", SOCK], capture_output=True, text=True).stdout.split()) if os.path.exists(SOCK) else set()
 def pids(): return sorted((started & running()) | (holding() & running()))
-WEBKIT = f"{HOME}/Library/WebKit/com.officecommun.search"
+def bundle_id():
+    try:
+        import plistlib
+        with open(f"{APP}/Contents/Info.plist", "rb") as f: return plistlib.load(f)["CFBundleIdentifier"]
+    except (OSError, KeyError, ValueError):
+        return "com.officecommun.search"
+# Where WebKit keeps the stores of the app the probe runs: under its bundle id.
+WEBKIT = f"{HOME}/Library/WebKit/{bundle_id()}"
 def stores():
     """The WebKit stores this world's runs made, where WebKit keeps them and
     named as the app names them (Store.probeStore, Spaces.store): its
@@ -106,7 +116,7 @@ def stores():
             found.append(f"{WEBKIT}/WebsiteDataStore/{id}")
     return found
 # The real Search's folder, beside whose stores these are removed.
-REAL = f"{HOME}/Library/Application Support/Search"
+REAL = f"{HOME}/Library/Application Support/Relay"
 FIRST_SPACE = "00000000-0000-0000-0000-000000000001"
 PERSONAL = "00000000-0000-0000-0000-0000000000A1"
 def guarded():
@@ -117,6 +127,10 @@ def guarded():
     ids = {FIRST_SPACE, PERSONAL.lower()}
     try:
         ids |= {str(uuid.UUID(space["id"])) for space in json.load(open(f"{REAL}/spaces.json"))}
+    except (OSError, ValueError, TypeError, KeyError, AttributeError):
+        pass
+    try:
+        ids |= {str(uuid.UUID(c["id"])) for c in json.load(open(f"{REAL}/containers.json"))}
     except (OSError, ValueError, TypeError, KeyError, AttributeError):
         pass
     try:
@@ -136,7 +150,7 @@ def wipe():
     subprocess.run(["rm", "-rf", SUPPORT]); subprocess.run(["defaults", "delete", SUITE], capture_output=True)
 def probe(pid):
     names = subprocess.run(["lsof", "-a", "-U", "-p", pid, "-Fn"], capture_output=True, text=True).stdout
-    return any(n.startswith("n") and "/Search (" in n and n.endswith("/bench.sock") for n in names.splitlines())
+    return any(n.startswith("n") and "/Relay (" in n and n.endswith("/bench.sock") for n in names.splitlines())
 def main_checkout():
     git = lambda *a: subprocess.run(["git", "-C", str(ROOT), "rev-parse", *a], capture_output=True, text=True).stdout.strip()
     return git("--git-dir") != "" and Path(git("--absolute-git-dir")) == Path(ROOT, git("--git-common-dir")).resolve()
@@ -156,6 +170,8 @@ def launch(link=None):
     if os.path.exists(SOCK): os.remove(SOCK)
     before = running()
     handed = ["--env", f"SEARCH_LINK={link}"] if link else []
+    # Fork: more of the environment for the probe, "KEY=VALUE,KEY=VALUE".
+    for pair in filter(None, os.environ.get("RELAY_PROBE_ENV", "").split(",")): handed += ["--env", pair]
     subprocess.run(["open", "-n", "-g", "-j", "--env", f"SEARCH_PROBE={W}", *handed, APP])
     for _ in range(150):
         if os.path.exists(SOCK): break

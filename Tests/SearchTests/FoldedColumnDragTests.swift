@@ -1,7 +1,7 @@
 import AppKit
 import SwiftUI
 import XCTest
-@testable import Search
+@testable import Relay
 
 /// The column folded away and slid out over the page (idea 1025): a tab
 /// carried up or down the column to reorder it passes over the page's left
@@ -81,7 +81,7 @@ final class FoldedColumnDragTests: XCTestCase {
 
     // MARK: - helpers
 
-    private func setUp() async throws -> (Browser, [Search.Tab], NSWindow) {
+    private func setUp() async throws -> (Browser, [Relay.Tab], NSWindow) {
         _ = NSApplication.shared
         activationPolicy = NSApp.activationPolicy()
         NSApp.setActivationPolicy(.prohibited)

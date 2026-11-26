@@ -1,7 +1,7 @@
 import Foundation
 import Security
 import XCTest
-@testable import Search
+@testable import Relay
 
 /// "Always allow" for a coding agent (AgentTrust): what is remembered is the
 /// code signature of the program that started the client, never the name it
@@ -184,7 +184,7 @@ final class AgentTrustTests: XCTestCase {
         // Preferences' switch calls AgentTrust.shared.forgetAll(): checked
         // in its source, as a unit test has no keychain of Search's own.
         let source = try String(contentsOfFile: #filePath.replacingOccurrences(of: "Tests/SearchTests/AgentTrustTests.swift",
-                                                                                 with: "Sources/Search/Prefs.swift"), encoding: .utf8)
+                                                                                 with: "Sources/Relay/Prefs.swift"), encoding: .utf8)
         XCTAssertTrue(source.contains("if agents != oldValue { AgentTrust.shared.forgetAll() }"))
     }
 
@@ -284,7 +284,7 @@ final class AgentTrustTests: XCTestCase {
         XCTAssertFalse(String(decoding: data, as: UTF8.self).contains("Tabs"), "nothing about your tabs is kept")
         // And AgentControl lets a remembered agent in without them, whatever.
         let source = try String(contentsOfFile: #filePath.replacingOccurrences(of: "Tests/SearchTests/AgentTrustTests.swift",
-                                                                                 with: "Sources/Search/AgentControl.swift"), encoding: .utf8)
+                                                                                 with: "Sources/Relay/AgentControl.swift"), encoding: .utf8)
         XCTAssertTrue(source.contains("session.consent.answer(allow: true, seesTabs: false)"))
     }
 
@@ -295,7 +295,7 @@ final class AgentTrustTests: XCTestCase {
             XCTAssertFalse(KeychainVault(service: "com.officecommun.search.agents.trusted.tests", account: "x").usable)
         }
         let source = try String(contentsOfFile: #filePath.replacingOccurrences(of: "Tests/SearchTests/AgentTrustTests.swift",
-                                                                                 with: "Sources/Search/AgentTrust.swift"), encoding: .utf8)
+                                                                                 with: "Sources/Relay/AgentTrust.swift"), encoding: .utf8)
         XCTAssertTrue(source.contains("out[kSecAttrAccessGroup as String] = group"))
     }
 
@@ -346,7 +346,7 @@ final class AgentTrustTests: XCTestCase {
     /// doesn't, nor does the stand-in for a test harness outside a test run.
     func testOnlyAlwaysTickedAgainLiftsIt() throws {
         let source = try String(contentsOfFile: #filePath.replacingOccurrences(of: "Tests/SearchTests/AgentTrustTests.swift",
-                                                                                 with: "Sources/Search/AgentControl.swift"), encoding: .utf8)
+                                                                                 with: "Sources/Relay/AgentControl.swift"), encoding: .utf8)
         XCTAssertTrue(source.contains("if allow, session.wantsAlways { AgentTrust.shared.resume(client: session.client) }"))
         XCTAssertFalse(source.contains("if allow { AgentTrust.shared.resume"))
         XCTAssertTrue(source.contains("AgentTrust.shared.suspend(client: session.client, also: session.admittedBy)"))

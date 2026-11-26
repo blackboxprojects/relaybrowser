@@ -1,6 +1,6 @@
 import Foundation
 import XCTest
-@testable import Search
+@testable import Relay
 
 /// Sync through a shared folder (Sync.swift, SyncMerge.swift): Macs that
 /// each write only their own file agree, item by item, whatever order they

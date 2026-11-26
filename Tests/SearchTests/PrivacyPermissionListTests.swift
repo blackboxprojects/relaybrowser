@@ -1,6 +1,6 @@
 import Foundation
 import XCTest
-@testable import Search
+@testable import Relay
 
 final class PrivacyPermissionListTests: XCTestCase {
     func testListAndResetKeepOriginAndPermissionBoundaries() throws {

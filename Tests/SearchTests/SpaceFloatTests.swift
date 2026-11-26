@@ -1,7 +1,7 @@
 import AppKit
 import WebKit
 import XCTest
-@testable import Search
+@testable import Relay
 
 @MainActor
 final class SpaceFloatTests: XCTestCase {

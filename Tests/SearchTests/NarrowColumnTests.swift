@@ -1,7 +1,7 @@
 import AppKit
 import SwiftUI
 import XCTest
-@testable import Search
+@testable import Relay
 
 /// The column narrowed by its edge, from its usual width to the least, with
 /// a button per space and the fold door on and off (idea 1010): its rows
@@ -165,7 +165,11 @@ final class NarrowColumnTests: XCTestCase {
         window.orderFrontRegardless()
         windows.append(window)
 
-        for width in stride(from: Metrics.side, through: Metrics.sideMin, by: -12) {
+        // Fork: the rows these widths were chosen for, whatever the column's
+        // margin: where a long title is cut depends on the row's width to
+        // the letter, and the margin was 10 a side when they were picked.
+        let slimmed = 2 * (10 - Metrics.sideEdge)
+        for width in stride(from: Metrics.side - slimmed, through: Metrics.sideMin, by: -12) {
             prefs.sideWidth = width
             window.setFrame(NSRect(x: -20_000, y: -20_000, width: width, height: Self.height), display: false)
             try await Task.sleep(for: .milliseconds(400))

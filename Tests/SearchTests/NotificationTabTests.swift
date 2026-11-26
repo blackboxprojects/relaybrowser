@@ -1,7 +1,7 @@
 import AppKit
 import WebKit
 import XCTest
-@testable import Search
+@testable import Relay
 
 /// Which tab a page's notification names and a click on it brings forward
 /// (#776). Only the choice: what shows a tab and brings the app forward is never
@@ -41,13 +41,13 @@ final class NotificationTabTests: XCTestCase {
         return browser
     }
 
-    private func go(_ tab: Search.Tab, to address: String) throws {
+    private func go(_ tab: Relay.Tab, to address: String) throws {
         tab.restore(url: try XCTUnwrap(URL(string: address)), title: "A page")
     }
 
     /// A new tab at an address, in the row. Given the address once it is the
     /// one in front, as selecting a tab that has one starts to load it.
-    private func tab(in browser: Browser, at address: String) throws -> Search.Tab {
+    private func tab(in browser: Browser, at address: String) throws -> Relay.Tab {
         browser.newTab()
         let tab = try XCTUnwrap(browser.active)
         try go(tab, to: address)
@@ -55,7 +55,7 @@ final class NotificationTabTests: XCTestCase {
     }
 
     /// What a click finds: the notification as it was posted.
-    private func chosen(tab id: String? = nil, from store: WKWebsiteDataStore?) -> (Browser, Search.Tab)? {
+    private func chosen(tab id: String? = nil, from store: WKWebsiteDataStore?) -> (Browser, Relay.Tab)? {
         var info: [AnyHashable: Any] = ["search.kind": "page", "search.id": "1", "search.origin": site]
         if let id { info[SiteNotifications.senderKey] = id }
         return SiteNotifications.tabToBringForward(info, from: store, among: browsers)
@@ -109,7 +109,7 @@ final class NotificationTabTests: XCTestCase {
         let browser = window()
         let first = try tab(in: browser, at: "https://chat.example/one")
         let sender = try tab(in: browser, at: "https://chat.example/two")
-        browser.receive(Search.Tab()) // In front, so closing the sender selects nothing that would load.
+        browser.receive(Relay.Tab()) // In front, so closing the sender selects nothing that would load.
         let id = sender.id.uuidString, store = sender.store
         browser.close(sender)
         XCTAssertFalse(browser.tabs.contains { $0 === sender })
@@ -140,9 +140,9 @@ final class NotificationTabTests: XCTestCase {
         let first = try tab(in: from, at: "https://chat.example/one")
         // Taken across blank and not in front: nothing selected along the
         // way has an address to load. It gets its address on arriving.
-        let sender = Search.Tab()
+        let sender = Relay.Tab()
         from.receive(sender)
-        from.receive(Search.Tab())
+        from.receive(Relay.Tab())
         from.moveToWindow(sender, to)
         XCTAssertTrue(to.tabs.contains { $0 === sender })
         XCTAssertFalse(from.tabs.contains { $0 === sender })
@@ -162,7 +162,7 @@ final class NotificationTabTests: XCTestCase {
         // is fixed: WebKit keeps a folder per id outside the test world, so
         // runs share one rather than leave a new one each.
         let id = try XCTUnwrap(UUID(uuidString: "07760776-0776-4776-8776-077607760776"))
-        let sender = Search.Tab(bench: true, configuration: Web.configuration(store: WKWebsiteDataStore(forIdentifier: id)))
+        let sender = Relay.Tab(bench: true, configuration: Web.configuration(store: WKWebsiteDataStore(forIdentifier: id)))
         browser.receive(sender)
         try go(sender, to: "https://chat.example/two")
         XCTAssertFalse(first.store === sender.store)
@@ -172,7 +172,7 @@ final class NotificationTabTests: XCTestCase {
     func testAPrivateTabIsNeverChosenEvenAsTheSender() throws {
         let browser = window()
         let first = try tab(in: browser, at: "https://chat.example/one")
-        let hidden = Search.Tab(shy: true)
+        let hidden = Relay.Tab(shy: true)
         browser.receive(hidden)
         try go(hidden, to: "https://chat.example/two")
         XCTAssertTrue(chosen(tab: hidden.id.uuidString, from: first.store)?.1 === first)

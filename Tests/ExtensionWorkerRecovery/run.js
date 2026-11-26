@@ -2,7 +2,7 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const assert = require('node:assert/strict');
 const path = require('node:path');
-const source = process.argv[2] ? fs.readFileSync(process.argv[2], 'utf8') : fs.readFileSync(path.join(__dirname, '../../Sources/Search/ExtensionShims.swift'), 'utf8');
+const source = process.argv[2] ? fs.readFileSync(process.argv[2], 'utf8') : fs.readFileSync(path.join(__dirname, '../../Sources/Relay/ExtensionShims.swift'), 'utf8');
 const script = source.split('nonisolated static let script = #"""\n')[1].split('\n    """#')[0];
 // A content script carries only the shim's part up to its early return
 // (ExtensionShims.contentShim); the content-script cases run that part, as

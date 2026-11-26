@@ -2,10 +2,10 @@ import AppKit
 import SwiftUI
 import WebKit
 import XCTest
-@testable import Search
+@testable import Relay
 import SearchPluginAPI
 
-private typealias PageTab = Search.Tab
+private typealias PageTab = Relay.Tab
 
 /// Developer Tools Full, headless, in a window that is never shown. Installed
 /// from a local feed, each panel reads a real page from a loopback server:

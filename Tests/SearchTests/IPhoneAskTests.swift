@@ -1,5 +1,5 @@
 import XCTest
-@testable import Search
+@testable import Relay
 
 /// The iPhone beta's quieter places (IPhoneAsk.swift): when they offer it,
 /// that one "Not now" or one address from anywhere ends it, and that each

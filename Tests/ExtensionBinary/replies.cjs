@@ -1,5 +1,5 @@
 const fs=require('node:fs'), vm=require('node:vm'), path=require('node:path'), assert=require('node:assert/strict');
-const source=fs.readFileSync(process.argv[2]||path.join(__dirname,'../../Sources/Search/ExtensionShims.swift'),'utf8');
+const source=fs.readFileSync(process.argv[2]||path.join(__dirname,'../../Sources/Relay/ExtensionShims.swift'),'utf8');
 const script=source.split('nonisolated static let script = #"""\n')[1].split('\n    """#')[0];
 const harness=fs.readFileSync(path.join(__dirname,'../ExtensionWorkerRecovery/shim-harness.js'),'utf8');
 const fixture=vm.runInNewContext(harness+'\nrecoveryFixture',{console});

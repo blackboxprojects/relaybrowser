@@ -2,7 +2,7 @@ import AppKit
 import PDFKit
 import WebKit
 import XCTest
-@testable import Search
+@testable import Relay
 
 @MainActor
 final class PDFExportTests: XCTestCase {
@@ -40,7 +40,7 @@ final class PDFExportTests: XCTestCase {
         XCTAssertFalse(text.contains("Different active page"))
     }
 
-    private func page(_ text: String, in browser: Browser) async throws -> Search.Tab {
+    private func page(_ text: String, in browser: Browser) async throws -> Relay.Tab {
         let tab = browser.open(try XCTUnwrap(URL(string: "about:blank")), foreground: true)
         tab.web.frame = NSRect(x: 0, y: 0, width: 700, height: 500)
         tab.web.loadHTMLString("<html><body><h1>\(text)</h1></body></html>", baseURL: URL(string: "https://example.invalid/"))

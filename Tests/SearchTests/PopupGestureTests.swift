@@ -1,6 +1,6 @@
 import JavaScriptCore
 import XCTest
-@testable import Search
+@testable import Relay
 
 final class PopupGestureTests: XCTestCase {
     func testLongLivedMenuPreservesFrameAndOneWindowLimit() {

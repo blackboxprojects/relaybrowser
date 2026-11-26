@@ -1,5 +1,5 @@
 import XCTest
-@testable import Search
+@testable import Relay
 
 final class DownloadFoldersTests: XCTestCase {
     func testFolders() {

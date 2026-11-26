@@ -2,7 +2,7 @@ import Foundation
 import XCTest
 import Darwin
 import AppKit
-@testable import Search
+@testable import Relay
 
 final class ImportFileTests: XCTestCase {
     override class func setUp() {

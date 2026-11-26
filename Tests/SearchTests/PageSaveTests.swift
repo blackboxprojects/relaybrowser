@@ -1,7 +1,7 @@
 import AppKit
 import WebKit
 import XCTest
-@testable import Search
+@testable import Relay
 
 /// File › Save Page As…: one web archive of the tab it was asked for, that
 /// opens again.
@@ -51,7 +51,7 @@ final class PageSaveTests: XCTestCase {
         try await waitFor("Kept for later", in: web)
     }
 
-    private func save(_ tab: Search.Tab, in browser: Browser) async throws -> URL {
+    private func save(_ tab: Relay.Tab, in browser: Browser) async throws -> URL {
         let file = FileManager.default.temporaryDirectory.appendingPathComponent("Search-Page-\(UUID().uuidString).webarchive")
         let worked = await withCheckedContinuation { continuation in
             browser.savePage(tab, to: file) { continuation.resume(returning: $0) }
@@ -60,7 +60,7 @@ final class PageSaveTests: XCTestCase {
         return file
     }
 
-    private func page(_ text: String, in browser: Browser) async throws -> Search.Tab {
+    private func page(_ text: String, in browser: Browser) async throws -> Relay.Tab {
         let tab = browser.open(try XCTUnwrap(URL(string: "about:blank")), foreground: true)
         tab.web.frame = NSRect(x: 0, y: 0, width: 700, height: 500)
         tab.web.loadHTMLString("<html><body><h1>\(text)</h1></body></html>", baseURL: URL(string: "https://example.invalid/"))

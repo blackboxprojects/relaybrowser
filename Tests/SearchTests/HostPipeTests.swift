@@ -1,7 +1,7 @@
 import Darwin
 import Foundation
 import XCTest
-@testable import Search
+@testable import Relay
 
 @available(macOS 15.4, *)
 final class HostPipeTests: XCTestCase {

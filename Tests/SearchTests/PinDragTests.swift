@@ -1,7 +1,7 @@
 import AppKit
 import SwiftUI
 import XCTest
-@testable import Search
+@testable import Relay
 
 /// A tab dragged onto the pins, and a pin dragged out among the tabs, with
 /// the column's own gestures: the column is hosted in a borderless window
@@ -323,7 +323,7 @@ final class PinDragTests: XCTestCase {
     /// The ring then put in place of its letter changed the square under the
     /// hand, and SwiftUI called the carry off (see CarryGuard), so the pin
     /// stayed put. A hand on screen is pressing a page that loads at once.
-    private func wake(_ pin: Search.Tab, then front: Search.Tab, in browser: Browser) async throws {
+    private func wake(_ pin: Relay.Tab, then front: Relay.Tab, in browser: Browser) async throws {
         browser.select(pin)
         let deadline = Date().addingTimeInterval(5)
         while Date() < deadline, pin.built?.url == nil || pin.loading {

@@ -1,7 +1,7 @@
 import AppKit
 import SwiftUI
 import XCTest
-@testable import Search
+@testable import Relay
 
 /// #846: a square carried across the grid stayed floating mid-drag. SwiftUI
 /// calls a drag off, without onEnded, when what is carried changes under the
@@ -160,7 +160,7 @@ final class PinStuckTests: XCTestCase {
     // MARK: - helpers
 
     /// What is carried changes under the hand: an icon arriving, shown.
-    private func iconArrives(_ tab: Search.Tab, in browser: Browser) {
+    private func iconArrives(_ tab: Relay.Tab, in browser: Browser) {
         browser.prefs.glyph = .icons
         tab.icon = NSImage(size: NSSize(width: 16, height: 16), flipped: false) { rect in
             NSColor.systemBlue.setFill()

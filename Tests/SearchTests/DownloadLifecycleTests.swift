@@ -4,9 +4,9 @@ import Foundation
 import SwiftUI
 import WebKit
 import XCTest
-@testable import Search
+@testable import Relay
 
-private typealias BrowserTab = Search.Tab
+private typealias BrowserTab = Relay.Tab
 
 @MainActor
 final class DownloadLifecycleTests: XCTestCase {

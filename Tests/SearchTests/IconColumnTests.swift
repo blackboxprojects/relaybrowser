@@ -1,7 +1,7 @@
 import AppKit
 import SwiftUI
 import XCTest
-@testable import Search
+@testable import Relay
 
 /// The column as icons only (idea 413), with its own gestures: hosted in a
 /// borderless window far off every screen (as PinDragTests does), never
@@ -46,7 +46,7 @@ final class IconColumnTests: XCTestCase {
         XCTAssertEqual(frames.count, 4, "every tab a tile")
         for frame in frames {
             XCTAssertEqual(frame.size, CGSize(width: Metrics.iconTile, height: Metrics.iconTile))
-            XCTAssertEqual(frame.minX, 10)
+            XCTAssertEqual(frame.minX, Metrics.sideEdge)
             XCTAssertLessThanOrEqual(frame.maxX, window.frame.width)
         }
         // The title; on the tab you're on, where it is too, as its row says at rest.

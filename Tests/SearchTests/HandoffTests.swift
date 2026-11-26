@@ -2,9 +2,9 @@ import AppKit
 import Foundation
 import WebKit
 import XCTest
-@testable import Search
+@testable import Relay
 
-private typealias BrowserTab = Search.Tab
+private typealias BrowserTab = Relay.Tab
 
 /// Handoff (Handoff.swift): the page on screen is offered from its window,
 /// and a private tab's never is.

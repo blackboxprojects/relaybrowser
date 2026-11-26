@@ -1,7 +1,7 @@
 import AppKit
 import SwiftUI
 import XCTest
-@testable import Search
+@testable import Relay
 
 /// A tab carried over a page shows where letting go would split it, before
 /// the hand reaches an edge or stops: TabDrag says which page it is over
@@ -74,7 +74,7 @@ final class SplitZonesTests: XCTestCase {
 
     // MARK: - helpers
 
-    private func setUp() async throws -> (Browser, [Search.Tab], NSWindow) {
+    private func setUp() async throws -> (Browser, [Relay.Tab], NSWindow) {
         _ = NSApplication.shared
         activationPolicy = NSApp.activationPolicy()
         NSApp.setActivationPolicy(.prohibited)
@@ -105,7 +105,7 @@ final class SplitZonesTests: XCTestCase {
 
     /// From the left of the window (off the page) to `share` of the page's
     /// width, 8 points a move.
-    private func carry(_ tab: Search.Tab, to share: CGFloat, in window: NSWindow, browser: Browser) async throws {
+    private func carry(_ tab: Relay.Tab, to share: CGFloat, in window: NSWindow, browser: Browser) async throws {
         var x: CGFloat = 40
         let end = 200 + 600 * share
         while x < end {
@@ -116,7 +116,7 @@ final class SplitZonesTests: XCTestCase {
         }
     }
 
-    private func update(_ tab: Search.Tab, at share: CGFloat, in window: NSWindow, browser: Browser) async throws {
+    private func update(_ tab: Relay.Tab, at share: CGFloat, in window: NSWindow, browser: Browser) async throws {
         TabDrag.testPointer = window.convertToScreen(NSRect(x: 200 + 600 * share, y: 200, width: 0, height: 0)).origin
         _ = TabDrag.shared.update(browser: browser, tab: tab, translation: .zero)
         try await Task.sleep(for: .milliseconds(30))

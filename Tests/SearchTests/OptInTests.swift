@@ -1,5 +1,5 @@
 import XCTest
-@testable import Search
+@testable import Relay
 
 /// News by email (OptIn.swift): what is remembered, when the card offers the
 /// field, and that a press sends the email, the source and the build, and
@@ -97,7 +97,7 @@ final class OptInTests: XCTestCase {
 
     func testHeadersCarryNoVersionOrLanguage() {
         let request = OptIn.request(email: "test+d@example.com", list: .news(iPhoneBeta: false), source: .settings)
-        XCTAssertEqual(request.value(forHTTPHeaderField: "User-Agent"), "Search")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "User-Agent"), "Relay")
         XCTAssertEqual(request.value(forHTTPHeaderField: "Accept-Language"), "en")
         XCTAssertFalse(request.httpShouldHandleCookies)
         XCTAssertNil(OptIn.session.configuration.httpCookieStorage)

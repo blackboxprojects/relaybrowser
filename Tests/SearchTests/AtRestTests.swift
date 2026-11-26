@@ -1,6 +1,6 @@
 import Foundation
 import XCTest
-@testable import Search
+@testable import Relay
 
 /// The address at rest on the tab you're on (AtRest.swift): the site it
 /// names, and how a look-alike name is shown.
@@ -163,5 +163,17 @@ final class AtRestTests: XCTestCase {
         XCTAssertNotNil(AtRest.said(URL(string: "https://github.com/"), always: true))
         XCTAssertNotNil(AtRest.said(URL(string: "http://example.com/"), always: false))
         XCTAssertNil(AtRest.said(URL(string: "about:blank"), always: true))
+    }
+
+    // Fork: Show only the site in the address bar.
+    func testTheAddressBarSaysOnlyTheSiteWhenAskedAndTheWholeAddressOtherwise() {
+        let page = URL(string: "https://docs.example.com/guide/start?x=1#top")!
+        XCTAssertEqual(AddressLine.said(page, siteOnly: false), "https://docs.example.com/guide/start?x=1#top")
+        XCTAssertEqual(AddressLine.said(page, siteOnly: true), "docs.example.com")
+        XCTAssertEqual(AddressLine.said(URL(string: "http://localhost:8080/a/b")!, siteOnly: true), "localhost:8080")
+        XCTAssertEqual(AddressLine.said(URL(string: "http://example.com/a")!, siteOnly: true), "Not secure — example.com")
+        // Nothing to name: said whole, and nothing at all for no address.
+        XCTAssertEqual(AddressLine.said(URL(string: "about:blank")!, siteOnly: true), "about:blank")
+        XCTAssertEqual(AddressLine.said(nil, siteOnly: true), "")
     }
 }

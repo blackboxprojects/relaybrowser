@@ -1,5 +1,5 @@
 import XCTest
-@testable import Search
+@testable import Relay
 
 /// Tabs down the side for a new Search, and no move for anybody already
 /// using one (SidebarDefault in Prefs.swift).

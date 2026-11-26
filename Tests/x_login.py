@@ -53,7 +53,7 @@ SIGN_IN_HOSTS = ["x.com", "api.x.com", "jf.x.com", "abs.twimg.com", "pbs.twimg.c
 
 
 def shield_domains():
-    src = (sv.ROOT / "Sources/Search/Shield.swift").read_text()
+    src = (sv.ROOT / "Sources/Relay/Shield.swift").read_text()
     start = src.index("private static let unwanted = [")
     return re.findall(r'"([^"]+)"', src[start:src.index("]", start)])
 

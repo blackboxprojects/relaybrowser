@@ -57,8 +57,8 @@ case "$ARCH" in
   x86_64) OUT="build/intel"; SUBFOLDER="/intel" ;;
   *) echo "SEARCH_ARCH is arm64 or x86_64, not “$ARCH”" >&2; exit 1 ;;
 esac
-APP="$OUT/Search.app"
-NAME="Search"
+APP="$OUT/Relay.app"
+NAME="Relay"
 # Asked for with SEARCH_DEV=1, a dev build, on a yellow plate and named for
 # the feature it's built from: "Search-split-view" in the menu bar, the Dock
 # and ⌘Tab, so it's never taken for the installed app beside it, or for the
@@ -190,8 +190,8 @@ if [ "$STEP" = "devtools" ]; then
   exit 0
 fi
 
-swift build "${SWIFTFLAGS[@]}" --product Search
-BINARY="$(swift build "${SWIFTFLAGS[@]}" --show-bin-path)/Search"
+swift build "${SWIFTFLAGS[@]}" --product Relay
+BINARY="$(swift build "${SWIFTFLAGS[@]}" --show-bin-path)/Relay"
 [ "$(lipo -archs "$BINARY")" = "$ARCH" ] || { echo "$BINARY is not a $ARCH binary" >&2; exit 1; }
 
 rm -rf "$APP"
@@ -230,7 +230,15 @@ fi
 ICONSET="build/AppIcon.iconset"
 ICONDOC="build/AppIcon.icon"
 rm -rf "$ICONSET" "$ICONDOC"
-SEARCH_DEV="$DEV" swift Icon/icon.swift "$ICONSET" "$ICONDOC" > /dev/null
+if [ "$DEV" = 1 ]; then
+  SEARCH_DEV="$DEV" swift Icon/icon.swift "$ICONSET" "$ICONDOC" > /dev/null
+else
+  # Fork: Relay's own icon is the dark Kikko (Icon/kikko.swift), drawn by
+  # the app's own ForkIconArt. A dev build keeps the yellow plate above.
+  cat Sources/Relay/ForkIconArt.swift Icon/kikko.swift > build/kikko-icon.swift
+  swift build/kikko-icon.swift "$ICONSET" "$ICONDOC" > /dev/null
+  rm -f build/kikko-icon.swift
+fi
 iconutil -c icns "$ICONSET" -o "$APP/Contents/Resources/AppIcon.icns"
 rm -rf "$ICONSET"
 # macOS 26's Dark, Clear and Tinted Dock styles read the icon from an asset
@@ -277,7 +285,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
   $ICONNAME
   <key>LSMinimumSystemVersion</key><string>$MINIMUM</string>
   <key>LSApplicationCategoryType</key><string>public.app-category.productivity</string>
-  <key>NSHumanReadableCopyright</key><string>© Office Commun · Search</string>
+  <key>NSHumanReadableCopyright</key><string>© Office Commun · Relay</string>
   <key>NSHighResolutionCapable</key><true/>
   <key>NSAppleScriptEnabled</key><true/>
   <key>OSAScriptingDefinition</key><string>Search.sdef</string>
@@ -305,7 +313,21 @@ cat > "$APP/Contents/Info.plist" <<PLIST
       <key>CFBundleURLSchemes</key>
       <array><string>mailto</string></array>
     </dict>
+    <!-- relay://open?profile=<profile id>&url=<http(s) address>, or
+         space=<space id>: a link another app sends to a profile or a space
+         it names (Caddie's rules), taken in Links.swift. Nothing else is
+         read from this scheme. -->
+    <dict>
+      <key>CFBundleURLName</key><string>Relay link</string>
+      <key>CFBundleURLSchemes</key>
+      <array><string>relay</string></array>
+    </dict>
   </array>
+  <!-- What a relay://open link may name besides its address (Links.named),
+       for another app to read before it offers them: Caddie shows its
+       space picker only when "space" is here. -->
+  <key>RelayLinkParameters</key>
+  <array><string>profile</string><string>space</string></array>
   <key>CFBundleDocumentTypes</key>
   <array>
     <dict>
@@ -348,27 +370,27 @@ cat > "$APP/Contents/Info.plist" <<PLIST
        not browsed for, and that list is only for browsing. Chrome lists
        one, _googlecast._tcp, for casting; Safari, part of macOS, needs none. -->
   <key>NSLocalNetworkUsageDescription</key>
-  <string>Search uses the local network to open pages on devices and servers in your home or office, such as .local addresses.</string>
+  <string>Relay uses the local network to open pages on devices and servers in your home or office, such as .local addresses.</string>
   <!-- A browser is asked for these by the pages it shows, not by itself. macOS
        still wants a sentence to put in its own prompt, and touching the APIs
        without one is a crash rather than a refusal. -->
   <key>NSCameraUsageDescription</key>
-  <string>Websites you visit can ask to use your camera. Search asks you the first time each site does and keeps your answer; Settings › Privacy forgets them.</string>
+  <string>Websites you visit can ask to use your camera. Relay asks you the first time each site does and keeps your answer; Settings › Privacy forgets them.</string>
   <key>NSMicrophoneUsageDescription</key>
-  <string>Websites you visit can ask to use your microphone. Search asks you the first time each site does and keeps your answer; Settings › Privacy forgets them.</string>
+  <string>Websites you visit can ask to use your microphone. Relay asks you the first time each site does and keeps your answer; Settings › Privacy forgets them.</string>
   <!-- Location: the first key is the one macOS has always read; the second
        is the one CoreLocation's requestWhenInUseAuthorization documents.
        Same sentence in both. -->
   <key>NSLocationUsageDescription</key>
-  <string>Websites you visit can ask for your location. Search asks you each time a site does, unless you choose Always allow for it; Settings › Privacy forgets those choices.</string>
+  <string>Websites you visit can ask for your location. Relay asks you each time a site does, unless you choose Always allow for it; Settings › Privacy forgets those choices.</string>
   <key>NSLocationWhenInUseUsageDescription</key>
-  <string>Websites you visit can ask for your location. Search asks you each time a site does, unless you choose Always allow for it; Settings › Privacy forgets those choices.</string>
+  <string>Websites you visit can ask for your location. Relay asks you each time a site does, unless you choose Always allow for it; Settings › Privacy forgets those choices.</string>
   <key>NSDownloadsFolderUsageDescription</key>
   <string>Files you download are saved to your Downloads folder.</string>
   <!-- Only once you turn on Settings › Passwords › Fill in your contact
        details: your own card, never anyone else's (MeCard.swift). -->
   <key>NSContactsUsageDescription</key>
-  <string>Search fills in forms with the details on your own card in Contacts, once you pick them under a box. It reads no one else's card and saves no copy of yours.</string>
+  <string>Relay fills in forms with the details on your own card in Contacts, once you pick them under a box. It reads no one else's card and saves no copy of yours.</string>
 </dict>
 </plist>
 PLIST

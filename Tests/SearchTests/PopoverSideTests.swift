@@ -1,6 +1,6 @@
 import AppKit
 import XCTest
-@testable import Search
+@testable import Relay
 
 final class PopoverSideTests: XCTestCase {
     private let clear = PopoverSide.clearance
