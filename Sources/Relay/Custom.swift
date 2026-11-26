@@ -30,6 +30,7 @@ enum TabFont {
 struct CustomSettings: View {
     @ObservedObject var prefs: Preferences
     @State private var backedUp: String?
+    @State private var restoring = false
     private static let families = NSFontManager.shared.availableFontFamilies.filter { !$0.hasPrefix(".") }
 
     var body: some View {
@@ -170,6 +171,12 @@ struct CustomSettings: View {
                         Pill("Back Up", filled: true) { backedUp = ForkBackup.run() }
                     }
                 }
+                Rule()
+                SettingRow(icon: "arrow.counterclockwise.icloud", title: "Restore",
+                           detail: "Bring back a backup: all of it, or only the settings, the tabs, the bookmarks, the containers or the site rules.") {
+                    Pill(restoring ? "Close" : "Choose…") { restoring.toggle() }
+                }
+                if restoring { RestorePanel() }
             }
         }
         GroupBlock(title: "Tab text", icon: "textformat") {
@@ -200,21 +207,21 @@ struct CustomSettings: View {
 }
 
 /// Fork: Relay's settings and what it keeps of the tabs, copied into iCloud
-/// Drive. A folder a day, the last seven kept. Nothing is read back from
-/// there: to restore, quit Relay and copy a day's files over the ones in
-/// ~/Library/Application Support/Relay.
+/// Drive. A folder a day, the last seven kept. ForkRestore brings one back.
 enum ForkBackup {
     static let home = FileManager.default.homeDirectoryForCurrentUser
         .appendingPathComponent("Library/Mobile Documents/com~apple~CloudDocs/App Data/Relay", isDirectory: true)
 
     /// What was done, in words for Settings.
     @discardableResult
-    static func run() -> String {
+    static func run(into name: String? = nil) -> String {
         guard !Store.testing else { return "Not in a test run." }
         let files = FileManager.default
         let stamp = DateFormatter()
         stamp.dateFormat = "yyyy-MM-dd"
-        let day = home.appendingPathComponent(stamp.string(from: Date()), isDirectory: true)
+        // Today's folder, or the one named: what a restore replaces goes
+        // into a folder of its own (see ForkRestore).
+        let day = home.appendingPathComponent(name ?? stamp.string(from: Date()), isDirectory: true)
         do {
             try files.createDirectory(at: day, withIntermediateDirectories: true)
             var copied = 0

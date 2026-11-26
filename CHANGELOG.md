@@ -11,6 +11,15 @@ in [ROADMAP.md](ROADMAP.md).
 
 ## Unreleased
 
+## 1.0.22 — 25 November 2026
+
+### Added
+
+- Restore a backup from Settings › Custom › Backup: pick a day, then all of
+  it or only the settings, the tabs, the bookmarks, the containers or the
+  container site rules. Relay restarts with them, and what was there before
+  is kept as "Before the last restore".
+
 ## 1.0.21 — 25 November 2026
 
 Relay's first release of its own, from `blackboxprojects/relaybrowser`.

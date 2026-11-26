@@ -103,6 +103,9 @@ final class Links: NSObject, NSApplicationDelegate {
         // their way to the disk.
         Disk.drain()
         // Fork: a copy of it all in iCloud Drive.
+        // Unless this is the quit of a restore: then what is there is kept
+        // apart, and the chosen backup goes in last of all (ForkRestore).
+        if MainActor.assumeIsolated({ ForkRestore.atQuit() }) { return }
         if Store.settings.object(forKey: "fork.backsUp") as? Bool ?? true { _ = ForkBackup.run() }
     }
 
