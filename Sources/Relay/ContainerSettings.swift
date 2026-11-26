@@ -46,7 +46,7 @@ struct ContainerSettingsView: View {
 
     private var rules: [(site: String, container: Container)] {
         let _ = tick
-        return Containers.rules.compactMap { site, id in Containers.named(id).map { (site, $0) } }.sorted { $0.site < $1.site }
+        return Containers.rulesListed()
     }
 
     var body: some View {

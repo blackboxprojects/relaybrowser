@@ -119,6 +119,17 @@ final class Updater: ObservableObject {
     // Fork: it was off here while the feed was Office Commun's, whose build
     // would have replaced this one. The feed is Relay's own now (ReleaseFeed).
     private var installsOnItsOwn: Bool { Store.settings.object(forKey: Updater.installKey) as? Bool ?? true }
+
+    /// Fork: an "off" saved while the feed was Office Commun's is let go,
+    /// once: it was this build keeping another browser's update out, not a
+    /// choice about Relay's own. From then on the switch is whatever it is
+    /// set to, and unset is on.
+    nonisolated static let ownFeedKey = "update.install.own"
+    nonisolated static func adoptOwnFeed(_ store: UserDefaults) {
+        guard !store.bool(forKey: ownFeedKey) else { return }
+        store.removeObject(forKey: installKey)
+        store.set(true, forKey: ownFeedKey)
+    }
     /// Where a line goes when there is one to say, handed over at launch.
     private var say: ((String) -> Void)?
 

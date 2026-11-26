@@ -11,6 +11,21 @@ in [ROADMAP.md](ROADMAP.md).
 
 ## Unreleased
 
+## 1.0.23 — 26 November 2026
+
+### Fixed
+
+- A site kept to a container that has a space of its own now opens in that
+  space, not in the one the window happened to be on. The tab in front
+  takes the window there; one opened behind goes quietly.
+- A tab group's title in the column is the size chosen for tab titles.
+
+### Changed
+
+- Settings › Containers lists the site rules by container name.
+- Updates install on their own unless switched off. An "off" saved before
+  Relay had releases of its own is cleared once.
+
 ## 1.0.22 — 25 November 2026
 
 ### Added

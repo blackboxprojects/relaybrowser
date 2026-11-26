@@ -178,19 +178,28 @@ struct GroupHeading: View {
         }
     }
 
+    /// Fork: in the column, a group's title at the size chosen for the tab
+    /// titles (Settings › Custom › Tab text), not a size of its own: with a
+    /// wide face such as SF Mono, a title larger than the tabs under it
+    /// read as letters spaced apart.
+    private var titleSize: CGFloat {
+        let chosen = browser.prefs.tabFontSize
+        return !horizontal && chosen > 0 ? CGFloat(chosen) : 12.5
+    }
+
     private var long: some View {
         HStack(spacing: 8) {
             if editing {
                 TextField("Group name", text: $draft)
                     .textFieldStyle(.plain)
-                    .font(TabFont.font(12.5, weight: .medium))
+                    .font(TabFont.font(titleSize, weight: .medium))
                     .frame(width: horizontal ? max(60, Self.width(for: group.name) - 20) : nil)
                     .focused($focused)
                     .onSubmit(commit)
                     .onExitCommand { browser.editingGroupID = nil }
             } else {
                 Text(group.name)
-                    .font(TabFont.font(12.5, weight: .medium))
+                    .font(TabFont.font(titleSize, weight: .medium))
                     .lineLimit(1)
                     .truncationMode(.tail)
             }

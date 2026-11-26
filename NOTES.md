@@ -1,3 +1,5 @@
+A site kept to a container that has a space of its own now opens in that space, not in the one the window was on. Settings › Containers lists the site rules by container name, a tab group's title in the column is the size chosen for tab titles, and updates install on their own unless switched off.
+
 Restore a backup from Settings › Custom › Backup: pick a day, then all of it or only the settings, the tabs, the bookmarks, the containers or the container site rules. Relay restarts with them, and what was there before is kept as "Before the last restore".
 
 Relay's first release of its own. Containers are built in: tabs with sign-ins of their own, from the crate button in the toolbar. Relay now updates itself from its releases on GitHub. Also new: private windows, blank new windows, an address bar that can show only the site, and slimmer margins beside the tabs.

@@ -338,6 +338,98 @@ final class ContainersTests: XCTestCase {
         XCTAssertEqual(runs, 1)
     }
 
+    func testSiteRulesAreListedByContainerNameThenSite() {
+        let work = Containers.add("Work")
+        let bank = Containers.add("bank")
+        defer {
+            for site in ["zebra.example", "apple.example", "mango.example"] { Containers.setRule(site, to: nil) }
+            Containers.delete(work.id)
+            Containers.delete(bank.id)
+        }
+        Containers.setRule("zebra.example", to: work.id)
+        Containers.setRule("apple.example", to: work.id)
+        Containers.setRule("mango.example", to: bank.id)
+        let listed = Containers.rulesListed().filter { [work.id, bank.id].contains($0.container.id) }
+        XCTAssertEqual(listed.map(\.site), ["mango.example", "apple.example", "zebra.example"])
+        XCTAssertEqual(listed.map(\.container.name), ["bank", "Work", "Work"])
+    }
+
+    func testAContainersTabOpenedOnAnotherSpaceGoesToItsOwn() throws {
+        try withTwoSpaces { browser, personal, work in
+            let job = Containers.add("Job")
+            defer { Containers.delete(job.id) }
+            Containers.assign(job.id, to: work)
+            XCTAssertEqual(browser.home(ofContainer: job.id), work)
+
+            // In front: the window goes to the container's space with it.
+            let url = try XCTUnwrap(URL(string: "https://job.example/"))
+            let tab = try XCTUnwrap(browser.open(url, inContainer: job.id, foreground: true))
+            XCTAssertTrue(browser.sendHome(tab, front: true))
+            XCTAssertEqual(browser.spaceID, work)
+            XCTAssertEqual(browser.activeID, tab.id)
+            XCTAssertTrue(browser.tabs.contains { $0.id == tab.id })
+            XCTAssertEqual(tab.container?.id, job.id)
+            // There, it is at home: nothing more to do.
+            XCTAssertNil(browser.home(ofContainer: job.id))
+            XCTAssertFalse(browser.sendHome(tab, front: true))
+
+            // Behind: it goes, and the window stays where it is.
+            browser.switchSpace(to: personal)
+            XCTAssertEqual(browser.spaceID, personal)
+            let behind = try XCTUnwrap(browser.open(url, inContainer: job.id, foreground: false))
+            XCTAssertTrue(browser.sendHome(behind, front: false))
+            XCTAssertEqual(browser.spaceID, personal)
+            XCTAssertFalse(browser.tabs.contains { $0.id == behind.id })
+            XCTAssertTrue(browser.parked[work]?.tabs.contains { $0.id == behind.id } == true)
+        }
+    }
+
+    func testAContainerOfEverySpaceOrOfNoneStaysWhereItOpened() throws {
+        try withTwoSpaces { browser, personal, _ in
+            let anywhere = Containers.add("Anywhere")
+            let gone = Containers.add("Gone")
+            defer { Containers.delete(anywhere.id); Containers.delete(gone.id) }
+            Containers.assign(gone.id, to: UUID())
+            let url = try XCTUnwrap(URL(string: "https://anywhere.example/"))
+            for id in [anywhere.id, gone.id] {
+                let tab = try XCTUnwrap(browser.open(url, inContainer: id, foreground: true))
+                XCTAssertNil(browser.home(ofContainer: id))
+                XCTAssertFalse(browser.sendHome(tab, front: true))
+                XCTAssertEqual(browser.spaceID, personal)
+                XCTAssertTrue(browser.tabs.contains { $0.id == tab.id })
+            }
+            XCTAssertNil(browser.home(ofContainer: nil))
+            let plain = try XCTUnwrap(browser.tabs.first { $0.container == nil })
+            XCTAssertFalse(browser.sendHome(plain, front: true))
+        }
+    }
+
+    func testWithoutSpacesAContainersTabStaysToo() throws {
+        try withTwoSpaces { browser, _, work in
+            let job = Containers.add("Job")
+            defer { Containers.delete(job.id) }
+            Containers.assign(job.id, to: work)
+            browser.prefs.usesSpaces = false
+            XCTAssertNil(browser.home(ofContainer: job.id))
+        }
+    }
+
+    private func withTwoSpaces(_ body: (Browser, UUID, UUID) throws -> Void) throws {
+        try withBrowser { browser, _ in
+            let uses = browser.prefs.usesSpaces
+            let spaces = browser.spaces
+            defer {
+                browser.prefs.usesSpaces = uses
+                browser.spaces = spaces
+            }
+            browser.prefs.usesSpaces = true
+            let personal = browser.spaceID
+            let work = UUID()
+            browser.spaces = [Space(id: personal, name: "Personal", colour: 0), Space(id: work, name: "Work", colour: 1)]
+            try body(browser, personal, work)
+        }
+    }
+
     private func withBrowser(_ body: (Browser, [Tab]) throws -> Void) rethrows {
         let browser = makeBrowser()
         let groups = browser.prefs.usesTabGroups

@@ -1583,6 +1583,7 @@ final class Preferences: ObservableObject {
         waitsForPlay = store.bool(forKey: Preferences.waitsKey)
         translateTarget = store.string(forKey: "translate.target") ?? ""
         translateAlways = Set(store.stringArray(forKey: PageTranslator.alwaysKey) ?? [])
+        Updater.adoptOwnFeed(store)
         installsUpdates = store.object(forKey: Updater.installKey) as? Bool ?? true
         showsUpdateReady = store.object(forKey: UpdateNotice.key) as? Bool ?? true
         updateHiddenBuild = store.integer(forKey: UpdateNotice.hiddenKey)

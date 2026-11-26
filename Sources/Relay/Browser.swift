@@ -10471,8 +10471,41 @@ extension Browser {
                 if front, let fresh { self.select(fresh) }
                 self.rememberSession()
             }
+            // A container given a space of its own: its tab goes there.
+            if let fresh { self.sendHome(fresh, front: front) }
         }
         return true
+    }
+
+    /// The space a container's tab belongs in, when that is not the one
+    /// the window is on: the space the container was given in Settings.
+    /// Nil for a container offered in every space, or one whose space is
+    /// gone or belongs to another profile.
+    func home(ofContainer id: UUID?) -> UUID? {
+        guard prefs.usesSpaces, let space = id.flatMap({ Containers.named($0) })?.space, space != spaceID,
+              spaces.contains(where: { $0.id == space }) else { return nil }
+        return space
+    }
+
+    /// A site rule's tab, opened on a space its container is not offered
+    /// in, moved to the container's own space. The tab in front takes the
+    /// window there with it; one opened behind goes quietly, and the foot
+    /// of the window says where. Answers whether it moved.
+    @discardableResult
+    func sendHome(_ tab: Tab, front: Bool) -> Bool {
+        guard let home = home(ofContainer: tab.container?.id),
+              let name = spaces.first(where: { $0.id == home })?.name,
+              tabs.contains(where: { $0.id == tab.id }) else { return false }
+        var moved = false
+        move(tab, toSpace: home) { [weak self, weak tab] in
+            moved = true
+            guard let self, let tab else { return }
+            guard front else { self.announce("Opened in \(name)"); return }
+            self.parked[home]?.active = tab.id
+            self.switchSpace(to: home)
+            self.joinContainerGroup(tab)
+        }
+        return moved
     }
 
     /// Settings › A tab group per container: a container's tab joins the

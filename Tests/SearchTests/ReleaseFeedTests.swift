@@ -62,4 +62,17 @@ final class ReleaseFeedTests: XCTestCase {
         XCTAssertFalse(try ours("https://github.com/blackboxprojects/relaybrowser/releases/../../../someone/else"))
         XCTAssertFalse(try ours("https://officecommun.com/search/Search.zip"))
     }
+
+    func testAnOffSavedBeforeRelaysOwnFeedIsLetGoOnce() throws {
+        let name = "relay.test.\(UUID().uuidString)"
+        let store = try XCTUnwrap(UserDefaults(suiteName: name))
+        defer { store.removePersistentDomain(forName: name) }
+        store.set(false, forKey: Updater.installKey)
+        Updater.adoptOwnFeed(store)
+        XCTAssertNil(store.object(forKey: Updater.installKey), "unset is on")
+        // Switched off after that, it stays off.
+        store.set(false, forKey: Updater.installKey)
+        Updater.adoptOwnFeed(store)
+        XCTAssertEqual(store.object(forKey: Updater.installKey) as? Bool, false)
+    }
 }

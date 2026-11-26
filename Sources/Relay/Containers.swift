@@ -202,6 +202,17 @@ enum Containers {
         set { Store.settings.set(newValue, forKey: "containers.groups") }
     }
 
+    /// The rules as Settings lists them: by container name, and under one
+    /// container by site. Rules of a container that is gone are left out.
+    static func rulesListed() -> [(site: String, container: Container)] {
+        rules.compactMap { site, id in named(id).map { (site: site, container: $0) } }.sorted {
+            let order = $0.container.name.localizedCaseInsensitiveCompare($1.container.name)
+            if order != .orderedSame { return order == .orderedAscending }
+            if $0.container.id != $1.container.id { return $0.container.id.uuidString < $1.container.id.uuidString }
+            return $0.site < $1.site
+        }
+    }
+
     /// Whether any site is kept to this container.
     static func hasRules(_ id: UUID) -> Bool { rules.values.contains(id) }
 
