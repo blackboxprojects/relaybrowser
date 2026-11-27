@@ -221,6 +221,76 @@ final class FormRelay: NSObject, WKScriptMessageHandler {
     })();
     """
 
+    /// Fork: whether a page is given the whole script. It finds sign-ins,
+    /// offers accounts, cards and codes, and watches what is sent: with
+    /// saving, filling, Apple Passwords, your contact details and passkeys
+    /// all off, none of that has anyone to tell, and every frame of every
+    /// page was still handed all of it. Then the page gets `lean` instead.
+    static func wanted(saves: Bool, fills: Bool, apple: Bool, contacts: Bool, passkeys: Bool) -> Bool {
+        saves || fills || apple || contacts || passkeys
+    }
+
+    /// Fork: the two things the whole script says that are not about
+    /// sign-ins, and that Relay goes by whatever is switched off: whether
+    /// the caret is in something that takes typing (so Tab, Space and the
+    /// single keys stay the page's), and a page's full screen, in and out.
+    /// A frame of another origin says nothing, as in the whole script.
+    static let lean = """
+    (function () {
+      var mark = Symbol.for('search.forms.lean');
+      if (globalThis[mark]) return;
+      globalThis[mark] = true;
+      var framed = window !== window.top;
+      if (framed) {
+        try {
+          for (var w = window; w !== w.top; w = w.parent) {
+            if (!w.frameElement || w.location.origin !== w.parent.location.origin) return;
+          }
+        } catch (err) { return; }
+      }
+      function active() {
+        var a = document.activeElement;
+        for (var i = 0; a && a.shadowRoot && a.shadowRoot.activeElement && i < 32; i++) a = a.shadowRoot.activeElement;
+        return a;
+      }
+      function editable(el) {
+        if (!el) return false;
+        var tag = (el.tagName || '').toLowerCase();
+        if (tag === 'textarea') return true;
+        if (el.isContentEditable === true) return true;
+        if (el.getAttribute && el.getAttribute('role') === 'textbox') return true;
+        if (tag === 'iframe') {
+          try { return editable(el.contentDocument && el.contentDocument.activeElement); }
+          catch (e) { return false; }
+        }
+        if (tag !== 'input') return false;
+        var kind = (el.type || 'text').toLowerCase();
+        return ['text', 'search', 'email', 'url', 'tel', 'password', 'number',
+                'date', 'datetime-local', 'month', 'week', 'time'].indexOf(kind) >= 0;
+      }
+      var said = null;
+      function caret() {
+        var typing = editable(active());
+        if (framed && !document.hasFocus()) return;
+        if (typing === said) return;
+        said = typing;
+        window.webkit.messageHandlers.officeForms.postMessage({ kind: 'focus', typing: typing, rect: null });
+      }
+      function immersed() {
+        var on = !!(document.fullscreenElement || document.webkitFullscreenElement);
+        window.webkit.messageHandlers.officeForms.postMessage({ kind: 'fullscreen', on: on });
+      }
+      if (!framed) {
+        document.addEventListener('fullscreenchange', immersed, true);
+        document.addEventListener('webkitfullscreenchange', immersed, true);
+      }
+      document.addEventListener('focusin', caret, true);
+      document.addEventListener('focusout', function () { setTimeout(caret, 0); }, true);
+      document.addEventListener('mouseup', function () { setTimeout(caret, 0); }, true);
+      caret();
+    })();
+    """
+
     static let script = """
     (function () {
       // Relay's own forms object carries this; a page's frame named

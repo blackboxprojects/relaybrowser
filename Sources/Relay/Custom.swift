@@ -239,6 +239,7 @@ struct CustomSettings: View {
                 if restoring { RestorePanel() }
             }
         }
+        ShieldListsSettings()
         PrivateVPNSettings()
         GroupBlock(title: "Tab text", icon: "textformat") {
             Card {
@@ -334,7 +335,7 @@ enum ForkIcon {
         guard kind != .standard else {
             NSApp.applicationIconImage = nil
             NSApp.dockTile.display()
-            stamp(nil)
+            stamp(nil, as: "")
             return
         }
         // Real pixels, not a picture drawn when asked for: the Dock took the
@@ -349,17 +350,35 @@ enum ForkIcon {
         }
         NSApp.applicationIconImage = icon
         NSApp.dockTile.display()
-        stamp(icon)
+        stamp(icon, as: stampName(kind.rawValue, dark: dark(Store.settings.string(forKey: "fork.iconLook") ?? "auto"),
+                                  build: Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? ""))
+    }
+
+    static let stampedKey = "fork.icon.stamped"
+    /// What is on the app on disk, by name: the icon, its look, and the
+    /// build it was put on, since an update is a new app with none.
+    static func stampName(_ kind: String, dark: Bool, build: String) -> String {
+        "\(kind)-\(dark ? "dark" : "light")@\(build)"
+    }
+    /// Whether the app on disk has to be written to: only when what it
+    /// should wear is not what it was last given. The standard icon ("")
+    /// on an app never stamped is nothing to do. It was written at every
+    /// launch and every change of light and dark, the same icon over itself.
+    static func needsStamp(wanted: String, stamped: String?) -> Bool {
+        wanted != (stamped ?? "")
     }
 
     /// The icon put on the app itself too, as Finder's Get Info does it, so
     /// Finder and other docks, which read the app on disk and not the Dock's
     /// tile, show it as well. Nil takes it off again.
-    private static func stamp(_ icon: NSImage?) {
-        guard !Store.testing else { return }
+    private static func stamp(_ icon: NSImage?, as name: String) {
+        guard !Store.testing, needsStamp(wanted: name, stamped: Store.settings.string(forKey: stampedKey)) else { return }
         let app = Bundle.main.bundlePath
         DispatchQueue.global(qos: .utility).async {
-            _ = NSWorkspace.shared.setIcon(icon, forFile: app, options: [])
+            // Noted only once it took: a failed write is tried again.
+            if NSWorkspace.shared.setIcon(icon, forFile: app, options: []) {
+                Store.settings.set(name, forKey: stampedKey)
+            }
         }
     }
 

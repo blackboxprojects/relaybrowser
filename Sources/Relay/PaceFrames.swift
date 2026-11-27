@@ -1,3 +1,6 @@
+// Fork: test and bench code, left out of a release build (Package.swift,
+// RELAY_BENCH; BenchOff.swift stands in).
+#if RELAY_BENCH
 import AppKit
 import QuartzCore
 
@@ -160,3 +163,4 @@ enum PaceFrames {
         return t(usage.ru_utime) + t(usage.ru_stime)
     }
 }
+#endif

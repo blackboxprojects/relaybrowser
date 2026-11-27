@@ -6,6 +6,9 @@
 #
 #   ./probe.sh                 copy /Applications/Relay.app
 #   ./probe.sh PATH/Relay.app  copy another build
+#
+# A release build no longer carries the bench: install one that does first,
+# with RELAY_BENCH=1 ./install.sh, or the probe has no socket to drive.
 set -euo pipefail
 FROM="${1:-/Applications/Relay.app}"
 DEST="$HOME/Library/Caches/relay-probe/Relay.app"

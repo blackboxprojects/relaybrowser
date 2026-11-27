@@ -1234,7 +1234,12 @@ final class Tab: ObservableObject, Identifiable {
         // Every frame: one of the page's own origin offers its sign-in's
         // boxes the page's accounts; any other returns at once (see the
         // script's first lines).
-        add(FormRelay.script, .atDocumentEnd, mainFrameOnly: false, in: Web.world)
+        // Fork: all of it only with something of it switched on; with
+        // none, the few lines that say where the caret is (FormRelay.lean).
+        let prefs = Shared.prefs
+        let forms = FormRelay.wanted(saves: prefs.savesPasswords, fills: prefs.fillsPasswords, apple: prefs.applePasswords,
+                                     contacts: FormRelay.contacts, passkeys: FormRelay.passkeysOffered)
+        add(forms ? FormRelay.script : FormRelay.lean, .atDocumentEnd, mainFrameOnly: false, in: Web.world)
         // The form script looks at boxes for your card only with Fill in
         // your contact details on.
         if FormRelay.contacts {

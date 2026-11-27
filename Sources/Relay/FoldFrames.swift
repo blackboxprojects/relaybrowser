@@ -1,3 +1,6 @@
+// Fork: test and bench code, left out of a release build (Package.swift,
+// RELAY_BENCH; BenchOff.swift stands in).
+#if RELAY_BENCH
 import AppKit
 import QuartzCore
 import WebKit
@@ -348,3 +351,4 @@ enum FoldFrames {
                 "roundedClips": rounded, "outside": outside, "big": big, "clearBig": clearBig, "kinds": kinds, "apart": apart]
     }
 }
+#endif

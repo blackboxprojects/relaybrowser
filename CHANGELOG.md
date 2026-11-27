@@ -11,6 +11,31 @@ in [ROADMAP.md](ROADMAP.md).
 
 ## Unreleased
 
+## 1.0.27 — 27 November 2026
+
+### Added
+
+- The blocker takes EasyList and EasyPrivacy (Settings › Custom › Blocking
+  lists, on): fetched from their keepers every four days, turned into
+  WebKit's own rules and enforced by WebKit, in private tabs and containers
+  too. Filters that need more than WebKit's rules can say (scripts put into
+  a page, rewritten headers) are left out.
+
+### Changed
+
+- With saving and filling passwords, Apple Passwords, contact details and
+  passkeys all off, a page is no longer handed the whole sign-in script
+  (57,000 characters, in every frame): only the few lines that say where
+  the caret is and when a page goes full screen.
+- A release build leaves out the bench and its test stand-ins (7,700
+  lines; the app is 0.9 MB smaller). Debug and test builds keep them, and
+  RELAY_BENCH=1 puts them in a release for a probe. "Let a script drive
+  Relay" is therefore gone from a release's Settings.
+- The app's icon on disk is written only when it changes, not at every
+  launch.
+- uBlock Origin Lite is no longer fetched at first launch while the
+  blocking lists are on. One already installed is left as it is.
+
 ## 1.0.26 — 26 November 2026
 
 ### Added

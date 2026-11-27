@@ -1,3 +1,6 @@
+// Fork: test and bench code, left out of a release build (Package.swift,
+// RELAY_BENCH; BenchOff.swift stands in).
+#if RELAY_BENCH
 import AppKit
 import AuthenticationServices
 import LocalAuthentication
@@ -28,6 +31,8 @@ final class Bench {
     static var dropdownMade: (ms: Double, rows: Int) = (0, 0)
 
     static let shared = Bench()
+    /// Fork: true where the bench is compiled in (see BenchOff.swift).
+    nonisolated static let built = true
     /// The column's edge held at a width by "edgetime", or let go (nil).
     static let edgeHeld = Notification.Name("search.bench.edgeHeld")
     private var awake: NSObjectProtocol?
@@ -7026,3 +7031,4 @@ final class StandInLink: AppleLink {
     func send(_ message: [String: Any]) throws {}
     func stop() {}
 }
+#endif

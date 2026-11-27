@@ -102,8 +102,29 @@ final class Shield: ObservableObject {
         guard let list else { return }
         if !again, holding.object(forKey: controller)?.boolValue == on { return }
         controller.remove(list)
-        if on { controller.add(list) }
+        extra.values.forEach(controller.remove)
+        if on {
+            controller.add(list)
+            extra.values.forEach(controller.add)
+        }
         holding.setObject(NSNumber(value: on), forKey: controller)
+    }
+
+    /// Fork: the lists fetched from their keepers (ShieldLists), by name,
+    /// on wherever Shield's own list is on and off wherever it is off.
+    private(set) var extra: [String: WKContentRuleList] = [:]
+
+    /// A fetched list compiled, compiled anew, or (nil) taken away: every
+    /// page that has Shield on gets the change now, not at its next visit.
+    func install(_ compiled: WKContentRuleList?, as name: String) {
+        let was = extra[name]
+        guard was !== compiled else { return }
+        extra[name] = compiled
+        for controller in holding.keyEnumerator().allObjects.compactMap({ $0 as? WKUserContentController })
+        where holding.object(forKey: controller)?.boolValue == true {
+            if let was { controller.remove(was) }
+            if let compiled { controller.add(compiled) }
+        }
     }
 
     /// Third parties whose only job is to watch or to sell. First-party

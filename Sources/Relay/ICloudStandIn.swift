@@ -1,3 +1,6 @@
+// Fork: test and bench code, left out of a release build (Package.swift,
+// RELAY_BENCH; BenchOff.swift stands in).
+#if RELAY_BENCH
 import Foundation
 
 // iCloud played by a folder, for Tests/icloud_two_macs.py: two hidden probes,
@@ -76,3 +79,4 @@ final class ICloudFolderEngine: ICloudEngine {
     func account() async -> ICloudSync.Account { .signedIn }
     func close() {}
 }
+#endif

@@ -108,7 +108,9 @@ enum SettingsIndex {
 
     static func group(_ id: String) -> SettingsGroup? { groups.first { $0.id == id } }
     static func groups(of page: SettingsPanel.Page) -> [SettingsGroup] { groups.filter { $0.page == page } }
-    static func items(in group: String) -> [SettingsItem] { items.filter { $0.group == group && !$0.findOnly } }
+    static func items(in group: String) -> [SettingsItem] { items.filter { $0.group == group && !$0.findOnly && hasBench($0) } }
+    /// Fork: the bench's switch only in a build that has the bench.
+    static func hasBench(_ item: SettingsItem) -> Bool { Bench.built || item.id != "bench" }
 
     // MARK: - rows
 

@@ -27,3 +27,11 @@ final class ShippedTests: XCTestCase {
         XCTAssertTrue(Shipped.ublockLite.allSatisfy { ("a"..."p").contains($0) })
     }
 }
+
+/// Fork: with the blocker's own lists on, nothing is fetched.
+final class ShippedListsTests: XCTestCase {
+    func testWithTheListsOnTheExtensionIsNotFetched() {
+        XCTAssertEqual(Shipped.step(done: false, installed: [], testing: false, lists: true), .nothing)
+        XCTAssertEqual(Shipped.step(done: false, installed: [], testing: false, lists: false), .install)
+    }
+}

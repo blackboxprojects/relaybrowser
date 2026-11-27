@@ -43,7 +43,11 @@ let package = Package(
             // Same reasoning as the canvas app next door: the whole interface is
             // main-thread by nature, and Swift 6's strict isolation buys nothing
             // here but ceremony.
-            swiftSettings: [.swiftLanguageMode(.v5)]
+            // Fork: the bench and its test stand-ins are in debug and test
+            // builds only; RELAY_BENCH=1 puts them in a release too, for a
+            // probe copied from the installed app (probe.sh).
+            swiftSettings: [.swiftLanguageMode(.v5), .define("RELAY_BENCH", .when(configuration: .debug))]
+                + (Context.environment["RELAY_BENCH"] == "1" ? [.define("RELAY_BENCH")] : [])
         ),
         // Test-only: keeps every window the unit tests make off the screen.
         .target(
