@@ -132,6 +132,9 @@ struct IconTile: View {
                 // The strip shows what the rows with titles would, letters
                 // or icons; icons only has always shown icons.
                 Mark(icon: prefs.narrowStrip && prefs.glyph == .letters ? nil : tab.icon, letter: tab.monogram, size: 16, dim: tab.asleep)
+                    // Fork: the container's bar here too; the dot was
+                    // never worn by a tile, and still is not.
+                    .overlay { ContainerDot(tab: tab, barOnly: true) }
                     .opacity(live || hovering ? 1 : 0.85)
             }
         }

@@ -35,6 +35,7 @@ struct ContainerSettingsView: View {
     @ObservedObject private var list = ContainerList.shared
     @State private var strict = Containers.strict
     @State private var groups = Containers.groupsTabs
+    @AppStorage(ContainerMark.key, store: Store.settings) private var mark = ContainerMark.dot.rawValue
     @State private var host = ""
     @State private var target: UUID?
     @State private var ruleTrouble = ""
@@ -106,6 +107,19 @@ struct ContainerSettingsView: View {
                         SettingRow(icon: "lock.square", title: "Keep containers to their own sites",
                                    detail: "A tab in a container that goes to a site with a rule for another container moves there, and a link to a site with no rule leaves the container, if that container has rules of its own. Off: only new tabs and tabs outside any container follow the rules.") {
                             Switch(on: Binding(get: { strict }, set: { strict = $0; Containers.strict = $0 }))
+                        }
+                    }
+                }
+                GroupBlock(title: "Marker", icon: "circle.lefthalf.filled") {
+                    Card {
+                        SettingRow(icon: "paintbrush.pointed", title: "Show a container as",
+                                   detail: "A dot on the tab's icon, or a bar in the container's colour to the left of it.") {
+                            Picker("", selection: $mark) {
+                                ForEach(ContainerMark.allCases) { Text($0.title).tag($0.rawValue) }
+                            }
+                            .pickerStyle(.segmented)
+                            .labelsHidden()
+                            .fixedSize()
                         }
                     }
                 }

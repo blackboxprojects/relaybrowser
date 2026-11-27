@@ -1108,7 +1108,7 @@ private struct TabPill: View, Equatable {
                     Mark(icon: prefs.glyph == .icons ? tab.icon : nil, letter: tab.monogram, size: 15, dim: tab.asleep,
                          contrast: prefs.highContrastText)
                         .overlay(alignment: .bottomTrailing) { AgentMark(tab: tab) }
-                        .overlay(alignment: .topTrailing) { ContainerDot(tab: tab) }
+                        .overlay { ContainerDot(tab: tab) }
                 }
             }
             .frame(width: 16, height: 16)
@@ -1136,7 +1136,7 @@ private struct TabPill: View, Equatable {
                     Mark(icon: prefs.glyph == .icons ? tab.icon : nil, letter: tab.monogram, size: Metrics.tabMark, dim: dim,
                          contrast: prefs.highContrastText)
                         .overlay(alignment: .bottomTrailing) { AgentMark(tab: tab) }
-                        .overlay(alignment: .topTrailing) { ContainerDot(tab: tab) }
+                        .overlay { ContainerDot(tab: tab) }
                 }
                 if tab.bench, !tab.agent {
                     // A script's tab, not yours.

@@ -2250,7 +2250,7 @@ private struct SideRow: View, Equatable {
                             // A coding agent at work here: a dot on the
                             // icon's corner, the row as it was.
                             .overlay(alignment: .bottomTrailing) { AgentMark(tab: tab) }
-                            .overlay(alignment: .topTrailing) { ContainerDot(tab: tab) }
+                            .overlay { ContainerDot(tab: tab) }
                             // A pinned row away from its page: the icon takes
                             // it back (PinIconHome).
                             .modifier(PinIconHome(browser: browser, tab: tab, enabled: interactive))

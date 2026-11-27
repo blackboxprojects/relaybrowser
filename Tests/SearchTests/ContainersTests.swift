@@ -460,3 +460,18 @@ final class ContainersTests: XCTestCase {
         return browser
     }
 }
+
+/// Fork: the dot or the bar a container's tab wears.
+final class ContainerMarkTests: XCTestCase {
+    func testTheDotUnlessTheBarWasChosen() {
+        XCTAssertEqual(ContainerMark.of(nil), .dot)
+        XCTAssertEqual(ContainerMark.of("nonsense"), .dot)
+        XCTAssertEqual(ContainerMark.of("dot"), .dot)
+        XCTAssertEqual(ContainerMark.of("bar"), .bar)
+    }
+
+    func testTheBarIsALittleTallerThanTheIconAndClearOfIt() {
+        XCTAssertEqual(ContainerMark.barHeight(icon: 15), 21)
+        XCTAssertGreaterThan(ContainerMark.barOut, ContainerMark.barWidth)
+    }
+}

@@ -11,6 +11,14 @@ in [ROADMAP.md](ROADMAP.md).
 
 ## Unreleased
 
+## 1.0.26 — 26 November 2026
+
+### Added
+
+- Settings › Containers › Marker: a container's tabs can wear a bar in its
+  colour to the left of the icon instead of the dot on it. With the bar,
+  the column of icons shows it too.
+
 ## 1.0.25 — 26 November 2026
 
 ### Added

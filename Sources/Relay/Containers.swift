@@ -345,22 +345,60 @@ enum ContainerGlyph {
     }
 }
 
-/// The dot a container's tab wears on its icon, in the container's colour.
+/// What a container's tab wears, in the container's colour: a dot on its
+/// icon's corner, or (Settings › Containers › Marker) a bar down the icon's
+/// left, clear of the icon and seen down the whole column at a glance.
+enum ContainerMark: String, CaseIterable, Identifiable {
+    case dot, bar
+
+    static let key = "fork.containerMark"
+    var id: String { rawValue }
+    var title: String { self == .dot ? "Dot" : "Bar" }
+
+    /// The saved choice; anything else saved there is the dot.
+    static func of(_ saved: String?) -> ContainerMark { saved.flatMap(ContainerMark.init) ?? .dot }
+
+    /// The bar beside an icon this tall: a little taller than it, and
+    /// this far left of it, in the room the row leaves before its icon.
+    static let barWidth: CGFloat = 1.5
+    static let barOut: CGFloat = 7
+    static func barHeight(icon: CGFloat) -> CGFloat { icon + 6 }
+}
+
+/// Laid over a tab's icon, at the icon's size: the dot on its top corner, or
+/// the bar to its left.
 struct ContainerDot: View {
     @ObservedObject var tab: Tab
     /// A container recoloured or deleted: its tabs' dots follow.
     @ObservedObject private var list = ContainerList.shared
     var size: CGFloat = 6
+    /// The toolbar's button says the tab's container with a dot always.
+    var dotOnly = false
+    /// The column of icons' tiles wear the bar, never the dot.
+    var barOnly = false
+    @AppStorage(ContainerMark.key, store: Store.settings) private var saved = ContainerMark.dot.rawValue
 
     var body: some View {
         if let container = tab.container {
-            Circle()
-                .fill(container.tint)
-                .frame(width: size, height: size)
-                .overlay(Circle().strokeBorder(Color.white.opacity(0.85), lineWidth: 0.75))
-                .offset(x: 2, y: -2)
+            if !dotOnly, ContainerMark.of(saved) == .bar {
+                GeometryReader { icon in
+                    Capsule()
+                        .fill(container.tint)
+                        .frame(width: ContainerMark.barWidth, height: ContainerMark.barHeight(icon: icon.size.height))
+                        .offset(x: -ContainerMark.barOut, y: -3)
+                }
                 .help(container.name)
                 .accessibilityLabel("Container: \(container.name)")
+            } else if !barOnly {
+                Circle()
+                    .fill(container.tint)
+                    .frame(width: size, height: size)
+                    .overlay(Circle().strokeBorder(Color.white.opacity(0.85), lineWidth: 0.75))
+                    .offset(x: 2, y: -2)
+                    .frame(maxWidth: dotOnly ? nil : .infinity, maxHeight: dotOnly ? nil : .infinity, alignment: .topTrailing)
+                    .help(container.name)
+                    .accessibilityLabel("Container: \(container.name)")
+            }
         }
     }
 }
@@ -420,7 +458,7 @@ struct ContainerDoor: View {
     var body: some View {
         Door(icon: ContainerGlyph.name, on: open, help: "Containers", shortcut: "containers.list") { open.toggle() }
             .overlay(alignment: .bottomTrailing) {
-                if let tab = browser.active { ContainerDot(tab: tab, size: 7).offset(x: -5, y: -3).allowsHitTesting(false) }
+                if let tab = browser.active { ContainerDot(tab: tab, size: 7, dotOnly: true).offset(x: -5, y: -3).allowsHitTesting(false) }
             }
             .popover(isPresented: $open, hangingFrom: arrowEdge) {
                 ContainersPopup(browser: browser) { open = false }
